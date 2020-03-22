@@ -1,4 +1,4 @@
 import { TaskCard } from "./TaskCard";
-import { Word } from "./Word";
+import { Player } from "./Player";
 
-export class Guess extends Map<TaskCard, Word> {}
+export type Guess = Map<TaskCard, Player>;

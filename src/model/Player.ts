@@ -11,13 +11,15 @@ export class Player {
   letters: Letter[] = [];
   @observable
   word?: Word;
+  @observable
   guess?: Guess;
+  score = 0;
 
   constructor(public name: string) {}
 
   drawCard() {
     this.word = undefined;
-    this.card = TaskCard.take();
+    this.card = TaskCard.draw();
   }
 
   drawLetters() {
@@ -30,5 +32,29 @@ export class Player {
 
   makeGuess(guess: Guess) {
     this.guess = guess;
+  }
+
+  addScorePoint() {
+    this.score++;
+  }
+
+  resetTask() {
+    this.card = undefined;
+  }
+
+  resetLetters() {
+    this.letters = [];
+  }
+
+  resetWord() {
+    this.word = undefined;
+  }
+
+  resetGuess() {
+    this.guess = undefined;
+  }
+
+  resetScore() {
+    this.score = 0;
   }
 }

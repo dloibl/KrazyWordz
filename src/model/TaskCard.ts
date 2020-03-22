@@ -2,14 +2,19 @@ import { random } from "./util";
 
 export class TaskCard {
   static CARDS = [
-    "Maskottchen eines Boxers",
-    "Ist mal klein und mal groß",
-    "Zwielichtige Gestalt"
+    { id: 0, value: "Maskottchen eines Boxers" },
+    { id: 1, value: "Ist mal klein und mal groß" },
+    { id: 2, value: "Zwielichtige Gestalt" }
   ];
 
-  private constructor(public task: string) {}
+  private constructor(public id: number, public task: string) {}
 
-  static take() {
-    return new TaskCard(random(this.CARDS));
+  static draw() {
+    const card = random(this.CARDS);
+    return new TaskCard(card.id, card.value);
+  }
+
+  equals(card: TaskCard) {
+    return card.id === this.id;
   }
 }

@@ -2,16 +2,22 @@ import { Player } from "./Player";
 import { observable, computed, action } from "mobx";
 import { Word } from "./Word";
 import { Guess } from "./Guess";
+import { TaskCard } from "./TaskCard";
 
 export class Game {
   @observable
   players: Player[] = [new Player("Pia")];
 
+  winningScore = 15;
+
+  @observable
+  isGameFinished: boolean = false;
+
   @observable
   activePlayerIndex = -1;
 
   @observable
-  turnCounter = 0;
+  roundCounter = 0;
 
   @computed
   get activePlayer() {
@@ -19,7 +25,7 @@ export class Game {
   }
 
   start() {
-    this.turnCounter++;
+    this.roundCounter++;
 
     // temp until parallel playing
     this.nextPlayer();
@@ -47,6 +53,19 @@ export class Game {
     this.nextPlayer();
   }
 
+  evaluateGuess(guessingPlayer: Player, guess: Guess) {
+    guess.forEach((player, task) =>
+      this.distributePoints(guessingPlayer, task, player)
+    );
+  }
+
+  distributePoints(guessingPlayer: Player, task: TaskCard, player: Player) {
+    if (player.card?.equals(task)) {
+      guessingPlayer.addScorePoint();
+      player.addScorePoint();
+    }
+  }
+
   nextPlayer() {
     this.activePlayerIndex = (this.activePlayerIndex + 1) % this.players.length;
     if (!this.activePlayer) {
@@ -54,22 +73,59 @@ export class Game {
     }
     if (this.isGuessTime) {
       // what to do?
+    } else if (this.haveAllPlayersGuessed) {
+      //give points
+      this.players.forEach(guessingPlayer =>
+        this.evaluateGuess(guessingPlayer, guessingPlayer.guess!)
+      );
+
+      this.isGameFinished = this.players.some(player =>
+        this.hasWinningScore(player)
+      );
     } else {
       this.drawCardAndLetters(this.activePlayer);
     }
   }
 
-  /** ends game */
-  finish() {}
+  hasWinningScore(player: Player) {
+    return player.score >= this.winningScore;
+  }
+
+  nextRound() {
+    this.roundCounter++;
+    this.players.forEach(player => this.resetRound(player));
+
+    //temp until parallel playing
+    this.nextPlayer();
+  }
+
+  finishGame() {
+    this.isGameFinished = true;
+  }
+
+  resetRound(player: Player) {
+    player.resetGuess();
+    player.resetLetters();
+    player.resetWord();
+    player.resetTask();
+  }
 
   @computed
   get isStarted() {
-    return this.turnCounter > 0;
+    return this.roundCounter > 0;
   }
 
   @computed
   get isGuessTime() {
-    return this.players.every(player => player.word != null);
+    return (
+      this.players.every(player => player.word != null) &&
+      !this.haveAllPlayersGuessed
+    );
+  }
+
+  @computed
+  get haveAllPlayersGuessed() {
+    return this.players.every(player => player.guess != null);
   }
 
   deletePlayer(name: string) {

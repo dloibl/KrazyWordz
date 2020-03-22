@@ -3,9 +3,12 @@ import { Game } from "../model/Game";
 import { observer } from "mobx-react";
 import { PlayWordView } from "./PlayWordView";
 import { MakeGuessView } from "./MakeGuessView";
+import { FinishRoundView } from "./FinishRoundView";
+import { observable } from "mobx";
 
 @observer
 export class GameView extends React.Component {
+  @observable
   game = new Game();
 
   render() {
@@ -20,6 +23,8 @@ export class GameView extends React.Component {
       );
     } else if (game.isGuessTime) {
       return <MakeGuessView game={game} />;
+    } else if (game.haveAllPlayersGuessed) {
+      return <FinishRoundView game={game} />;
     } else {
       return <PlayWordView game={game} />;
     }

@@ -3,7 +3,7 @@ import { Word } from "../model/Word";
 import { Game } from "../model/Game";
 import { observer } from "mobx-react";
 
-export const PlayerTurnView = observer(function({ game }: { game: Game }) {
+export const PlayWordView = observer(function({ game }: { game: Game }) {
   const player = game.activePlayer;
   const [answer, setAnswer] = React.useState("");
   return (
@@ -19,11 +19,10 @@ export const PlayerTurnView = observer(function({ game }: { game: Game }) {
       <input onChange={e => setAnswer(e.target.value)} />
       <button
         onClick={() => {
-          player.placeWord(new Word(answer));
-          game.nextPlayer();
+          game.playWord(player, new Word(answer));
         }}
       >
-        Next
+        Play
       </button>
     </div>
   );

@@ -1,5 +1,7 @@
 import { Player } from "./Player";
-import { observable, computed } from "mobx";
+import { observable, computed, action } from "mobx";
+import { Word } from "./Word";
+import { Guess } from "./Guess";
 
 export class Game {
   @observable
@@ -18,22 +20,56 @@ export class Game {
 
   start() {
     this.turnCounter++;
+
+    // temp until parallel playing
+    this.nextPlayer();
+  }
+
+  @action
+  drawCardAndLetters(player: Player) {
+    player.drawCard();
+    player.drawLetters();
+  }
+
+  @action
+  playWord(player: Player, word: Word) {
+    player.playWord(word);
+
+    // temp until parallel playing
+    this.nextPlayer();
+  }
+
+  @action
+  makeYourGuess(player: Player, guess: Guess) {
+    player.makeGuess(guess);
+
+    // temp until parallel playing
     this.nextPlayer();
   }
 
   nextPlayer() {
     this.activePlayerIndex = (this.activePlayerIndex + 1) % this.players.length;
-    if (this.activePlayer) {
-      this.activePlayer.takeCard();
-      this.activePlayer.takeLetters();
+    if (!this.activePlayer) {
+      return;
+    }
+    if (this.isGuessTime) {
+      // what to do?
+    } else {
+      this.drawCardAndLetters(this.activePlayer);
     }
   }
 
+  /** ends game */
   finish() {}
 
   @computed
   get isStarted() {
     return this.turnCounter > 0;
+  }
+
+  @computed
+  get isGuessTime() {
+    return this.players.every(player => player.word != null);
   }
 
   deletePlayer(name: string) {

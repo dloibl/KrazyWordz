@@ -1,7 +1,8 @@
 import React from "react";
 import { Game } from "../model/Game";
 import { observer } from "mobx-react";
-import { PlayerTurnView } from "./PlayerTurnView";
+import { PlayWordView } from "./PlayWordView";
+import { MakeGuessView } from "./MakeGuessView";
 
 @observer
 export class GameView extends React.Component {
@@ -17,8 +18,11 @@ export class GameView extends React.Component {
           <button onClick={() => game.start()}>Start Game</button>
         </div>
       );
+    } else if (game.isGuessTime) {
+      return <MakeGuessView game={game} />;
+    } else {
+      return <PlayWordView game={game} />;
     }
-    return <PlayerTurnView game={game} />;
   }
 }
 

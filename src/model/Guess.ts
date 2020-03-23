@@ -1,4 +1,4 @@
-import { TaskCard } from "./TaskCard";
+import { Task } from "./Task";
 import { Player } from "./Player";
 
-export type Guess = Map<TaskCard, Player>;
+export type Guess = Map<Task, Player>;

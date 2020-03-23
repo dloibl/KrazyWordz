@@ -1,4 +1,4 @@
-import { TaskCard } from "./TaskCard";
+import { Task } from "./Task";
 import { Word } from "./Word";
 import { Letter } from "./Letter";
 import { observable } from "mobx";
@@ -6,7 +6,7 @@ import { Guess } from "./Guess";
 
 export class Player {
   @observable
-  card?: TaskCard;
+  card?: Task;
   @observable
   letters: Letter[] = [];
   @observable
@@ -19,7 +19,7 @@ export class Player {
 
   drawCard() {
     this.word = undefined;
-    this.card = TaskCard.draw();
+    this.card = Task.draw();
   }
 
   drawLetters() {

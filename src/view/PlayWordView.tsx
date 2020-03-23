@@ -1,7 +1,9 @@
 import React from "react";
-import { Word } from "../model/Word";
-import { Game } from "../model/Game";
+import { Game, Word } from "../model";
 import { observer } from "mobx-react";
+import { LetterTile } from "./LetterTile";
+import { Tableau } from "./Tableau";
+import { TaskCard } from "./TaskCard";
 
 export const PlayWordView = observer(function({ game }: { game: Game }) {
   const player = game.activePlayer;
@@ -10,11 +12,14 @@ export const PlayWordView = observer(function({ game }: { game: Game }) {
     <div>
       <h3>It's your turn {player.name}</h3>
       Your task is:
-      <span>{player.card?.task}</span>
-      <div>
-        Your available letters:
-        {player.letters.map(letter => letter.value).join(" ")}
+      <TaskCard task={player.card!} />
+      Your available letters:
+      <div className="letters">
+        {player.letters.map((letter, index) => (
+          <LetterTile key={index} letter={letter} />
+        ))}
       </div>
+      <Tableau />
       Your answer:
       <input onChange={e => setAnswer(e.target.value)} />
       <button

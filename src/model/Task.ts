@@ -1,6 +1,6 @@
 import { random } from "./util";
 
-export class TaskCard {
+export class Task {
   static CARDS = [
     { id: 0, value: "Maskottchen eines Boxers" },
     { id: 1, value: "Ist mal klein und mal groß" },
@@ -11,10 +11,10 @@ export class TaskCard {
 
   static draw() {
     const card = random(this.CARDS);
-    return new TaskCard(card.id, card.value);
+    return new Task(card.id, card.value);
   }
 
-  equals(card: TaskCard) {
+  equals(card: Task) {
     return card.id === this.id;
   }
 }

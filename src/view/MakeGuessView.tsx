@@ -1,6 +1,5 @@
-import { Game } from "../model/Game";
+import { Game } from "../model";
 import React from "react";
-import { Guess } from "../model/Guess";
 import { observer } from "mobx-react";
 
 export const MakeGuessView = observer(function({ game }: { game: Game }) {

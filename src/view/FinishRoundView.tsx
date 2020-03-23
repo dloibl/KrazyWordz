@@ -1,6 +1,5 @@
 import React from "react";
-import { Word } from "../model/Word";
-import { Game } from "../model/Game";
+import { Game } from "../model";
 import { observer } from "mobx-react";
 
 export const FinishRoundView = observer(function({ game }: { game: Game }) {

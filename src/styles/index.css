@@ -1,0 +1,41 @@
+.letters {
+  margin: 1em;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 25em;
+}
+
+.letter-tile {
+  background-color: #ebe6b7;
+  border-radius: 0.5em;
+  padding: 0.5em;
+  width: 1em;
+  height: 1em;
+  text-align: center;
+  border: 1px solid black;
+  box-shadow: 1px 1px 0px #bfbb93, 2px 2px 0px #bfbb93, 3px 3px 0px #bfbb93,
+    4px 4px 0px #bfbb93, 5px 5px 0px #bfbb93;
+}
+
+.tableau {
+  margin: 1em;
+  border: 5px solid;
+  background: white;
+  border-radius: 1em;
+  width: 20em;
+  height: 2em;
+}
+
+.task-card {
+  margin: 1em;
+  padding: 1em;
+  width: 12em;
+  height: 4em;
+  border-radius: 1em;
+  border: 5px solid grey;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

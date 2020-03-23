@@ -2,7 +2,7 @@ import { Player } from "./Player";
 import { observable, computed, action } from "mobx";
 import { Word } from "./Word";
 import { Guess } from "./Guess";
-import { TaskCard } from "./TaskCard";
+import { Task } from "./Task";
 
 export class Game {
   @observable
@@ -59,7 +59,7 @@ export class Game {
     );
   }
 
-  distributePoints(guessingPlayer: Player, task: TaskCard, player: Player) {
+  distributePoints(guessingPlayer: Player, task: Task, player: Player) {
     if (player.card?.equals(task)) {
       guessingPlayer.addScorePoint();
       player.addScorePoint();

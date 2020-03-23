@@ -1,5 +1,5 @@
 import React from "react";
-import { Game } from "../model/Game";
+import { Game } from "../model";
 import { observer } from "mobx-react";
 import { PlayWordView } from "./PlayWordView";
 import { MakeGuessView } from "./MakeGuessView";

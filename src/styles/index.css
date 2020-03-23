@@ -25,6 +25,8 @@
   border-radius: 1em;
   width: 20em;
   height: 2em;
+  display: flex;
+  flex-direction: row;
 }
 
 .task-card {
@@ -38,4 +40,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.dragging {
+  opacity: 0.5;
+}
+.dropping {
+  filter: 80%;
 }

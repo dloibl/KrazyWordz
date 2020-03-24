@@ -1,3 +1,7 @@
+:root {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+}
+
 .letters {
   margin: 1em;
   display: flex;
@@ -16,15 +20,17 @@
   border: 1px solid black;
   box-shadow: 1px 1px 0px #bfbb93, 2px 2px 0px #bfbb93, 3px 3px 0px #bfbb93,
     4px 4px 0px #bfbb93, 5px 5px 0px #bfbb93;
+  cursor: grab;
 }
 
 .tableau {
+  padding: 0.5em;
   margin: 1em;
   border: 5px solid;
   background: white;
   border-radius: 1em;
-  width: 20em;
-  height: 2em;
+  width: 18em;
+  height: 2.5em;
   display: flex;
   flex-direction: row;
 }
@@ -47,4 +53,36 @@
 }
 .dropping {
   filter: 80%;
+}
+
+.button {
+  display: inline-block;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-radius: 0.317rem;
+  background-color: #aaa;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.5;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -webkit-font-smoothing: antialiased;
+  max-height: 4em;
+}
+
+.button:hover {
+  opacity: 0.85;
+}
+
+.button:active {
+  box-shadow: inset 0 3px 4px hsla(0, 0%, 0%, 0.2);
+}
+
+.button:focus {
+  outline: thin dotted #444;
+  outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
 }

@@ -1,7 +1,7 @@
 import { Task } from "./Task";
 import { Word } from "./Word";
 import { Letter } from "./Letter";
-import { observable } from "mobx";
+import { observable, action } from "mobx";
 import { Guess } from "./Guess";
 
 export class Player {
@@ -12,7 +12,8 @@ export class Player {
   @observable
   word?: Word;
   @observable
-  guess?: Guess;
+  guess: Guess = new Map();
+  @observable
   score = 0;
 
   constructor(public name: string) {}
@@ -28,6 +29,11 @@ export class Player {
 
   playWord(word: Word) {
     this.word = word;
+  }
+
+  @action
+  addGuess(card: Task, player: Player) {
+    this.guess.set(card, player);
   }
 
   makeGuess(guess: Guess) {
@@ -51,7 +57,7 @@ export class Player {
   }
 
   resetGuess() {
-    this.guess = undefined;
+    this.guess.clear();
   }
 
   resetScore() {

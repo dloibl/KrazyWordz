@@ -20,6 +20,8 @@
   border: 1px solid black;
   box-shadow: 1px 1px 0px #bfbb93, 2px 2px 0px #bfbb93, 3px 3px 0px #bfbb93,
     4px 4px 0px #bfbb93, 5px 5px 0px #bfbb93;
+}
+.letter-tile:not(.disabled) {
   cursor: grab;
 }
 
@@ -36,6 +38,7 @@
 }
 
 .task-card {
+  position: relative;
   margin: 1em;
   padding: 1em;
   width: 12em;
@@ -46,6 +49,21 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+.task-card.match > button {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.task-cards-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.match-panel {
+  display: flex;
+  flex-direction: row;
 }
 
 .dragging {
@@ -73,7 +91,11 @@
   max-height: 4em;
 }
 
-.button:hover {
+.button:disabled {
+  cursor: not-allowed;
+}
+
+.button:hover:not(:disabled) {
   opacity: 0.85;
 }
 

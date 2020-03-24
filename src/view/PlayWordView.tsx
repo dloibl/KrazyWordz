@@ -12,13 +12,14 @@ export const PlayWordView = observer(function({ game }: { game: Game }) {
     <div>
       <h3>It's your turn {player.name}</h3>
       Your task is:
-      <TaskCard task={player.card!} />
+      <TaskCard task={player.card!} disabled={true} />
       Your available letters:
       <LetterPool letters={player.letters} />
       <div style={{ display: "flex" }}>
         <Tableau letters={player.letters} />
         <button
           className="button"
+          disabled={player.letters.length === 0}
           style={{ margin: "1em" }}
           onClick={() => {
             game.playWord(player, createWord(player.letters));

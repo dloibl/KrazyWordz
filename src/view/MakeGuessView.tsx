@@ -1,37 +1,52 @@
 import { Game } from "../model";
 import React from "react";
 import { observer } from "mobx-react";
+import { TaskCard } from "./TaskCard";
+import { Tableau } from "./Tableau";
+import { MatchedCard } from "./MatchedCard";
 
 export const MakeGuessView = observer(function({ game }: { game: Game }) {
   const player = game.activePlayer;
-
   return (
     <div>
       <h3>Ok {player.name}, make your guess</h3>
-      <div>
-        {game.players
-          .filter(p => p !== player)
-          .map(it => it.card?.task)
-          .map(task => (
-            <div
-              key={task}
-              style={{ padding: "1rem", border: "1px solid black" }}
-            >
-              {task}
-            </div>
-          ))}
+      <div className="match-panel">
+        <div className="task-cards-panel">
+          {game.players
+            .filter(p => p !== player)
+            .map(it => it.card!)
+            .filter(card => !player.guess.has(card))
+            .map(card => (
+              <TaskCard key={card.id} task={card} disabled={false} />
+            ))}
+        </div>
+        <div>
+          {game.players
+            .filter(p => p !== player)
+            .filter(p => !Array.from(player.guess.values()).includes(p))
+            .map(p => (
+              <Tableau
+                key={p.name}
+                disabled={true}
+                letters={p.word!.getLetters()}
+                onDropCard={card => player.addGuess(card, p)}
+              ></Tableau>
+            ))}
+        </div>
       </div>
-      <div>
-        {game.players
-          .filter(p => p !== player)
-          .map(it => it.word?.word)
-          .map(word => (
-            <div key={word} style={{ border: "1px solid black" }}>
-              {word}
-            </div>
-          ))}
-      </div>
-      <button onClick={() => game.makeYourGuess(player, new Map())}>
+      {Array.from(player.guess.entries()).map(([card, p]) => (
+        <MatchedCard
+          key={card.id}
+          card={card}
+          word={p.word!}
+          onDelete={task => player.guess.delete(task)}
+        />
+      ))}
+      <button
+        disabled={player.guess.size !== game.players.length - 1}
+        className="button"
+        onClick={() => game.makeYourGuess(player, player.guess)}
+      >
         Guess
       </button>
     </div>

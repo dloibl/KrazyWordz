@@ -1,7 +1,7 @@
 import React from "react";
 import { useDrop } from "react-dnd";
 import { ItemTypes } from "./ItemTypes";
-import { Letter } from "../model";
+import { Letter, Task } from "../model";
 import { LetterTile } from "./LetterTile";
 import { observer } from "mobx-react";
 import {
@@ -13,16 +13,25 @@ import {
 
 export const Tableau = observer(function({
   color = "teal",
-  letters = []
+  letters = [],
+  disabled = false,
+  onDropCard
 }: {
   color?: string;
   letters: Letter[];
+  disabled?: boolean;
+  onDropCard?: (card: Task) => void;
 }) {
   const [{ isOver }, drop] = useDrop({
-    accept: ItemTypes.LETTER,
+    accept: [ItemTypes.LETTER, ItemTypes.CARD],
     drop: drop => {
-      const letter = ((drop as any) as { letter: Letter }).letter;
-      letter.position = getNextPosition(letters);
+      if (drop.type === ItemTypes.LETTER) {
+        const letter = ((drop as any) as { letter: Letter }).letter;
+        letter.position = getNextPosition(letters);
+      }
+      if (drop.type === ItemTypes.CARD && onDropCard) {
+        onDropCard((drop as any).card);
+      }
     },
     collect: mon => ({
       isOver: !!mon.isOver()
@@ -51,15 +60,17 @@ export const Tableau = observer(function({
       }}
     >
       {getSortedPlayedLetters(letters).map((letter, index) => (
-        <LetterTile key={index} letter={letter} />
+        <LetterTile key={index} letter={letter} disabled={disabled} />
       ))}
-      <input
-        autoFocus={true}
-        tabIndex={1}
-        value=""
-        style={{ width: "100%" }}
-        onChange={() => null}
-      />
+      {!disabled && (
+        <input
+          autoFocus={true}
+          tabIndex={1}
+          value=""
+          style={{ width: "100%" }}
+          onChange={() => null}
+        />
+      )}
     </div>
   );
 });

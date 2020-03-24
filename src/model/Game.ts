@@ -125,7 +125,7 @@ export class Game {
 
   @computed
   get haveAllPlayersGuessed() {
-    return this.players.every(player => player.guess != null);
+    return this.players.every(player => player.guess.size !== 0);
   }
 
   deletePlayer(name: string) {

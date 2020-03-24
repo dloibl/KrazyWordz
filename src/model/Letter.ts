@@ -33,7 +33,7 @@ export class Letter {
   @observable
   position?: number = undefined;
 
-  private constructor(public value: string) {
+  constructor(public value: string) {
     this.isVocal = Letter.VOCALS.includes(value);
   }
 

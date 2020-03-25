@@ -1,16 +1,12 @@
 import { random } from "./util";
 
+import cards from "../resources/de/cards.json";
+const CARDS = Object.entries(cards).map(([id, value]) => ({ id, value }));
 export class Task {
-  static CARDS = [
-    { id: 0, value: "Maskottchen eines Boxers" },
-    { id: 1, value: "Ist mal klein und mal groß" },
-    { id: 2, value: "Zwielichtige Gestalt" }
-  ];
-
-  private constructor(public id: number, public task: string) {}
+  private constructor(public id: string, public task: string) {}
 
   static draw() {
-    const card = random(this.CARDS);
+    const card = random(CARDS);
     return new Task(card.id, card.value);
   }
 

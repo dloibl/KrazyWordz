@@ -5,6 +5,7 @@ import { PlayWordView } from "./PlayWordView";
 import { MakeGuessView } from "./MakeGuessView";
 import { FinishRoundView } from "./FinishRoundView";
 import { observable } from "mobx";
+import { RobotPlayer } from "../model/RobotPlayer";
 
 @observer
 export class GameView extends React.Component {

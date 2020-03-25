@@ -1,6 +1,5 @@
 - correct letter distribution
 - add more cards
 - ensure that each task and each letter is only drawn once per game
-- make drag&drop for guesses possible
 - parallel playing from different clients
 - nice layout (colors, ...)

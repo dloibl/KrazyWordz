@@ -3,6 +3,8 @@ import { Word } from "./Word";
 import { Letter } from "./Letter";
 import { observable, action } from "mobx";
 import { Guess } from "./Guess";
+import { RobotPlayer } from "./RobotPlayer";
+import { TaskCard } from "../view/TaskCard";
 
 export class Player {
   @observable
@@ -13,6 +15,10 @@ export class Player {
   word?: Word;
   @observable
   guess: Guess = new Map();
+  @observable
+  tempGuess: Guess = new Map();
+  @observable
+  guessConfirmed = false;
   @observable
   score = 0;
 
@@ -36,8 +42,17 @@ export class Player {
     this.guess.set(card, player);
   }
 
-  makeGuess(guess: Guess) {
-    this.guess = guess;
+  @action
+  addTempGuess(card: Task, player: Player) {
+    this.tempGuess.set(card, player);
+  }
+
+  confirmGuess() {
+    this.guessConfirmed = true;
+  }
+
+  resetGuessConfirmation() {
+    this.guessConfirmed = false;
   }
 
   addScorePoint() {

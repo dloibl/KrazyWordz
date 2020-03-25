@@ -3,10 +3,13 @@ import { observable, computed, action } from "mobx";
 import { Word } from "./Word";
 import { Guess } from "./Guess";
 import { Task } from "./Task";
+import { RobotPlayer } from "./RobotPlayer";
 
 export class Game {
   @observable
   players: Player[] = [new Player("Pia")];
+
+  robot = new RobotPlayer();
 
   winningScore = 15;
 
@@ -24,9 +27,14 @@ export class Game {
     return this.players[this.activePlayerIndex];
   }
 
+  constructor() {
+    (window as any).Game = this;
+  }
+
   start() {
     this.roundCounter++;
 
+    this.robot.drawCard();
     // temp until parallel playing
     this.nextPlayer();
   }
@@ -46,8 +54,8 @@ export class Game {
   }
 
   @action
-  makeYourGuess(player: Player, guess: Guess) {
-    player.makeGuess(guess);
+  makeYourGuess(player: Player) {
+    player.confirmGuess();
 
     // temp until parallel playing
     this.nextPlayer();
@@ -60,7 +68,7 @@ export class Game {
   }
 
   distributePoints(guessingPlayer: Player, task: Task, player: Player) {
-    if (player.card?.equals(task)) {
+    if (player.card?.id === task.id) {
       guessingPlayer.addScorePoint();
       player.addScorePoint();
     }
@@ -108,6 +116,7 @@ export class Game {
     player.resetLetters();
     player.resetWord();
     player.resetTask();
+    player.resetGuessConfirmation();
   }
 
   @computed
@@ -125,7 +134,7 @@ export class Game {
 
   @computed
   get haveAllPlayersGuessed() {
-    return this.players.every(player => player.guess.size !== 0);
+    return this.players.every(player => player.guessConfirmed === true);
   }
 
   deletePlayer(name: string) {

@@ -1,5 +1,5 @@
 import React from "react";
-import { Game } from "../model";
+import { Game, createGame } from "../model";
 import { observer } from "mobx-react";
 import { PlayWordView } from "./PlayWordView";
 import { MakeGuessView } from "./MakeGuessView";
@@ -10,10 +10,17 @@ import { RobotPlayer } from "../model/RobotPlayer";
 @observer
 export class GameView extends React.Component {
   @observable
-  game = new Game();
+  private game!: Game;
+
+  async componentDidMount() {
+    this.game = await createGame(window.location.search.includes("remote"));
+  }
 
   render() {
     const game = this.game;
+    if (!game) {
+      return "Loading...";
+    }
     if (!game.isStarted) {
       return (
         <div>

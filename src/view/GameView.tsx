@@ -57,7 +57,14 @@ function AddPlayer({ game }: { game: Game }) {
     <div>
       Add Player
       <input value={name} onChange={e => setName(e.target.value)}></input>
-      <button onClick={() => game.addPlayer(name)}>+</button>
+      <button
+        onClick={() => {
+          game.addPlayer(name);
+          setName("");
+        }}
+      >
+        +
+      </button>
     </div>
   );
 }

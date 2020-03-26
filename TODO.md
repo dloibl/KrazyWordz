@@ -1,9 +1,7 @@
 - finish game when we run out of cards
-- correct letter distribution and drawing: draw 6 consonants and 3 vocals. draw each tile only once per round
-- add more cards
 - mix task cards and words for guessing
 - no ordering of open and guessed cards
-- parallel playing from different clients
+- eingabefeld löschen nach AddPlayer
 - nice layout (colors, ...)
 - remote game fertig stellen
 - offline game: Zwischenbutton einfügen zwischen den Aktionen "Spielerwechsel XY"

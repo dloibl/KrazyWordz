@@ -2,7 +2,7 @@ import firebase from "firebase/app";
 import "firebase/firestore";
 
 var firebaseConfig = {
-  apiKey: "AIzaSyCmnLKl-0Qw1uGF-jPebcAMG74oPZisVwQ",
+  apiKey: new URLSearchParams(window.location.search).get("apiKey"),
   authDomain: "krazywordz-98c48.firebaseapp.com",
   databaseURL: "https://krazywordz-98c48.firebaseio.com",
   projectId: "krazywordz-98c48",

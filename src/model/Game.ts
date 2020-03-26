@@ -5,6 +5,7 @@ import { Guess } from "./Guess";
 import { Task } from "./Task";
 import { RobotPlayer } from "./RobotPlayer";
 import { CardPool } from "./CardPool";
+import { LetterPool } from "./LetterPool";
 
 export class Game {
   @observable
@@ -25,6 +26,8 @@ export class Game {
 
   private cardPool = CardPool.getInstance();
 
+  private letterPool?: LetterPool;
+
   @computed
   get activePlayer() {
     return this.players[this.activePlayerIndex];
@@ -36,7 +39,7 @@ export class Game {
 
   start() {
     this.roundCounter++;
-
+    this.letterPool = new LetterPool();
     this.robot.drawCard(this.cardPool);
     // temp until parallel playing
     this.nextPlayer();
@@ -45,7 +48,7 @@ export class Game {
   @action
   drawCardAndLetters(player: Player) {
     player.drawCard(this.cardPool);
-    player.drawLetters();
+    player.drawLetters(this.letterPool!);
   }
 
   @action
@@ -105,6 +108,9 @@ export class Game {
   nextRound() {
     this.roundCounter++;
     this.players.forEach(player => this.resetRound(player));
+
+    this.letterPool = undefined; //necessary?!
+    this.letterPool = new LetterPool();
 
     //temp until parallel playing
     this.nextPlayer();

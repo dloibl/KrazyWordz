@@ -6,6 +6,7 @@ import { Guess } from "./Guess";
 import { RobotPlayer } from "./RobotPlayer";
 import { TaskCard } from "../view/TaskCard";
 import { CardPool } from "./CardPool";
+import { LetterPool } from "./LetterPool";
 
 export class Player {
   @observable
@@ -29,8 +30,8 @@ export class Player {
     this.card = cardPool.draw();
   }
 
-  drawLetters() {
-    this.letters = Letter.take9();
+  drawLetters(letterPool: LetterPool) {
+    this.letters = letterPool.drawLetters();
   }
 
   playWord(word: Word) {

@@ -1,5 +1,7 @@
-- correct letter distribution
+- finish game when we run out of cards
+- correct letter distribution and drawing
 - add more cards
-- ensure that each task and each letter is only drawn once per game
 - parallel playing from different clients
 - nice layout (colors, ...)
+- remote game fertig stellen
+- offline game: Zwischenbutton einfügen zwischen den Aktionen "Spielerwechsel XY"

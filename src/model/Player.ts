@@ -5,6 +5,7 @@ import { observable, action } from "mobx";
 import { Guess } from "./Guess";
 import { RobotPlayer } from "./RobotPlayer";
 import { TaskCard } from "../view/TaskCard";
+import { CardPool } from "./CardPool";
 
 export class Player {
   @observable
@@ -24,9 +25,8 @@ export class Player {
 
   constructor(public name: string) {}
 
-  drawCard() {
-    this.word = undefined;
-    this.card = Task.draw();
+  drawCard(cardPool: CardPool) {
+    this.card = cardPool.draw();
   }
 
   drawLetters() {

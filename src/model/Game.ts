@@ -4,6 +4,7 @@ import { Word } from "./Word";
 import { Guess } from "./Guess";
 import { Task } from "./Task";
 import { RobotPlayer } from "./RobotPlayer";
+import { CardPool } from "./CardPool";
 
 export class Game {
   @observable
@@ -22,6 +23,8 @@ export class Game {
   @observable
   roundCounter = 0;
 
+  private cardPool = CardPool.getInstance();
+
   @computed
   get activePlayer() {
     return this.players[this.activePlayerIndex];
@@ -34,14 +37,14 @@ export class Game {
   start() {
     this.roundCounter++;
 
-    this.robot.drawCard();
+    this.robot.drawCard(this.cardPool);
     // temp until parallel playing
     this.nextPlayer();
   }
 
   @action
   drawCardAndLetters(player: Player) {
-    player.drawCard();
+    player.drawCard(this.cardPool);
     player.drawLetters();
   }
 

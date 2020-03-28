@@ -23,4 +23,11 @@ export class RemoteGame extends Game {
     super.playWord(player, word);
     this.firestore.setWord(player.name, word.word);
   }
+
+  makeYourGuess(player: Player) {
+    super.makeYourGuess(player);
+    const guess = new Map();
+    player.guess.forEach((player, task) => guess.set(task.id, player.name));
+    this.firestore.storeGuess(player.name, guess);
+  }
 }

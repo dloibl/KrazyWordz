@@ -18,8 +18,6 @@ export class Player {
   @observable
   guess: Guess = new Map();
   @observable
-  tempGuess: Guess = new Map();
-  @observable
   guessConfirmed = false;
   @observable
   score = 0;
@@ -41,11 +39,6 @@ export class Player {
   @action
   addGuess(card: Task, player: Player) {
     this.guess.set(card, player);
-  }
-
-  @action
-  addTempGuess(card: Task, player: Player) {
-    this.tempGuess.set(card, player);
   }
 
   confirmGuess() {

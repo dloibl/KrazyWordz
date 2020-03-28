@@ -46,4 +46,12 @@ export class Firestore {
       .doc(player)
       .set({ word });
   }
+
+  //guess number: cardId, guess string: player name
+  storeGuess(player: string, guess: Map<string, string>) {
+    this.getGame()
+      .collection("players")
+      .doc(player)
+      .set({ guess });
+  }
 }

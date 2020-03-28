@@ -1,4 +1,4 @@
-import { randomIndex, random } from "./util";
+import { randomIndex } from "./util";
 import { Letter } from "./Letter";
 
 export class LetterPool {
@@ -70,8 +70,6 @@ export class LetterPool {
     "Ü",
     "Y"
   ];
-
-  constructor() {}
 
   drawLetters() {
     const result = [] as Letter[];

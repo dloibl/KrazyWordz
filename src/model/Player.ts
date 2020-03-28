@@ -3,8 +3,6 @@ import { Word } from "./Word";
 import { Letter } from "./Letter";
 import { observable, action } from "mobx";
 import { Guess } from "./Guess";
-import { RobotPlayer } from "./RobotPlayer";
-import { TaskCard } from "../view/TaskCard";
 import { CardPool } from "./CardPool";
 import { LetterPool } from "./LetterPool";
 

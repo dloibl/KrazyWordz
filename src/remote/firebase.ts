@@ -17,6 +17,7 @@ firebase.initializeApp(firebaseConfig);
 
 export class Firestore {
   private name?: string;
+  private localPlayer?: string;
 
   constructor(private db = firebase.firestore()) {}
 
@@ -24,12 +25,29 @@ export class Firestore {
     return this.db.collection("games").doc(this.name);
   }
 
+  subscribe() {
+    this.getGame()
+      .collection("players")
+      .onSnapshot(querySnapshot => {
+        // const numberOfPlayers = querySnapshot.size;
+        querySnapshot.forEach(doc => {
+          const player = doc.id;
+          if (player !== this.localPlayer) {
+            const data = doc.data(); // {word: "", guess}
+            console.log(data);
+          }
+        });
+      });
+  }
+
   newGame(name: string) {
     this.name = name;
     this.getGame().set({ started: false });
+    this.subscribe();
   }
 
   addPlayer(name: string) {
+    this.localPlayer = name;
     this.getGame()
       .collection("players")
       .doc(name)
@@ -52,6 +70,6 @@ export class Firestore {
     this.getGame()
       .collection("players")
       .doc(player)
-      .set({ guess });
+      .set({ guess: JSON.stringify(guess) });
   }
 }

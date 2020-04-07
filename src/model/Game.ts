@@ -6,10 +6,11 @@ import { Task } from "./Task";
 import { RobotPlayer } from "./RobotPlayer";
 import { CardPool } from "./CardPool";
 import { LetterPool } from "./LetterPool";
+import { Playable } from "./Playable";
 
-export class Game {
+export class Game implements Playable {
   @observable
-  players: Player[] = [new Player("Pia")];
+  players: Player[] = [];
 
   robot = new RobotPlayer();
 
@@ -150,13 +151,14 @@ export class Game {
     this.players = this.players.filter(it => it.name !== name);
   }
 
-  addPlayer(name: string) {
+  addPlayer = (name: string) => {
     if (!name) {
       throw new Error("Name must be given");
     }
     if (this.players.find(it => it.name === name) != null) {
-      throw new Error(`Player with ${name} already exists`);
+      console.warn(`Player with ${name} already exists`);
+      return;
     }
     this.players.push(new Player(name));
-  }
+  };
 }

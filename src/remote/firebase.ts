@@ -15,9 +15,17 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 // firebase.analytics();
 
+enum ActionType {
+  START_GAME,
+  ADD_PLAYER,
+  PLAY_WORD,
+  MAKE_GUESS
+}
+
 export class Firestore {
   private name?: string;
   private localPlayer?: string;
+  onPlayerAdded!: (p: string) => void;
 
   constructor(private db = firebase.firestore()) {}
 
@@ -34,13 +42,18 @@ export class Firestore {
           const player = doc.id;
           if (player !== this.localPlayer) {
             const data = doc.data(); // {word: "", guess}
-            console.log(data);
+            console.log(data, player);
+            switch (getActionType(data)) {
+              case ActionType.ADD_PLAYER:
+                this.onPlayerAdded(data.name);
+                break;
+            }
           }
         });
       });
   }
 
-  newGame(name: string) {
+  async newGame(name: string) {
     this.name = name;
     this.getGame().set({ started: false });
     this.subscribe();
@@ -71,5 +84,11 @@ export class Firestore {
       .collection("players")
       .doc(player)
       .set({ guess: JSON.stringify(guess) });
+  }
+}
+
+function getActionType(data: any) {
+  if ("name" in data) {
+    return ActionType.ADD_PLAYER;
   }
 }

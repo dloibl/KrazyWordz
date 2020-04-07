@@ -1,15 +1,17 @@
 import React from "react";
-import { Game, createGame } from "../model";
+import { createGame } from "../model";
 import { observer } from "mobx-react";
 import { PlayWordView } from "./PlayWordView";
 import { MakeGuessView } from "./MakeGuessView";
 import { FinishRoundView } from "./FinishRoundView";
 import { observable } from "mobx";
+import { Playable } from "../model/Playable";
+import { RemoteGame } from "../model/RemoteGame";
 
 @observer
 export class GameView extends React.Component {
   @observable
-  private game!: Game;
+  private game!: Playable;
 
   async componentDidMount() {
     this.game = await createGame(window.location.search.includes("remote"));
@@ -38,7 +40,7 @@ export class GameView extends React.Component {
   }
 }
 
-const PlayerList = observer(function({ game }: { game: Game }) {
+const PlayerList = observer(function({ game }: { game: Playable }) {
   return (
     <ul>
       {game.players.map(({ name }) => (
@@ -50,8 +52,11 @@ const PlayerList = observer(function({ game }: { game: Game }) {
   );
 });
 
-function AddPlayer({ game }: { game: Game }) {
+function AddPlayer({ game }: { game: Playable }) {
   const [name, setName] = React.useState("");
+  if (game instanceof RemoteGame && game.activePlayer) {
+    return null;
+  }
   return (
     <div>
       Add Player

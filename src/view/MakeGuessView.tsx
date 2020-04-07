@@ -1,11 +1,11 @@
-import { Game } from "../model";
 import React from "react";
 import { observer } from "mobx-react";
 import { TaskCard } from "./TaskCard";
 import { Tableau } from "./Tableau";
 import { MatchedCard } from "./MatchedCard";
+import { Playable } from "../model/Playable";
 
-export const MakeGuessView = observer(function({ game }: { game: Game }) {
+export const MakeGuessView = observer(function({ game }: { game: Playable }) {
   const player = game.activePlayer;
   return (
     <div>

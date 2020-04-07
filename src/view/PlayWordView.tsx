@@ -1,12 +1,12 @@
 import React from "react";
-import { Game } from "../model";
+import { Playable } from "../model/Playable";
 import { observer } from "mobx-react";
 import { Tableau } from "./Tableau";
 import { TaskCard } from "./TaskCard";
 import { LetterPool } from "./LetterPool";
 import { createWord } from "../model/Letter";
 
-export const PlayWordView = observer(function({ game }: { game: Game }) {
+export const PlayWordView = observer(function({ game }: { game: Playable }) {
   const player = game.activePlayer;
   return (
     <div>

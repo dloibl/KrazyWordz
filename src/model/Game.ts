@@ -90,11 +90,11 @@ export class Game implements Playable {
       // what to do?
     } else if (this.haveAllPlayersGuessed) {
       //give points
-      this.players.forEach(guessingPlayer =>
+      this.players.forEach((guessingPlayer) =>
         this.evaluateGuess(guessingPlayer, guessingPlayer.guess!)
       );
 
-      this.isGameFinished = this.players.some(player =>
+      this.isGameFinished = this.players.some((player) =>
         this.hasWinningScore(player)
       );
     } else {
@@ -108,7 +108,7 @@ export class Game implements Playable {
 
   nextRound() {
     this.roundCounter++;
-    this.players.forEach(player => this.resetRound(player));
+    this.players.forEach((player) => this.resetRound(player));
 
     this.letterPool = undefined; //necessary?!
     this.letterPool = new LetterPool();
@@ -137,25 +137,25 @@ export class Game implements Playable {
   @computed
   get isGuessTime() {
     return (
-      this.players.every(player => player.word != null) &&
+      this.players.every((player) => player.word != null) &&
       !this.haveAllPlayersGuessed
     );
   }
 
   @computed
   get haveAllPlayersGuessed() {
-    return this.players.every(player => player.guessConfirmed === true);
+    return this.players.every((player) => player.guessConfirmed === true);
   }
 
   deletePlayer(name: string) {
-    this.players = this.players.filter(it => it.name !== name);
+    this.players = this.players.filter((it) => it.name !== name);
   }
 
   addPlayer = (name: string) => {
     if (!name) {
       throw new Error("Name must be given");
     }
-    if (this.players.find(it => it.name === name) != null) {
+    if (this.players.find((it) => it.name === name) != null) {
       console.warn(`Player with ${name} already exists`);
       return;
     }

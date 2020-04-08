@@ -7,6 +7,7 @@ import { FinishRoundView } from "./FinishRoundView";
 import { observable } from "mobx";
 import { Playable } from "../model/Playable";
 import { RemoteGame } from "../model/RemoteGame";
+import { CreateGameView } from "./CreateGameView";
 
 @observer
 export class GameView extends React.Component {
@@ -23,6 +24,9 @@ export class GameView extends React.Component {
       return "Loading...";
     }
     if (!game.isStarted) {
+      if (game instanceof RemoteGame && !game.name) {
+        return <CreateGameView game={game} />;
+      }
       return (
         <div>
           <PlayerList game={game} />
@@ -40,7 +44,7 @@ export class GameView extends React.Component {
   }
 }
 
-const PlayerList = observer(function({ game }: { game: Playable }) {
+const PlayerList = observer(function ({ game }: { game: Playable }) {
   return (
     <ul>
       {game.players.map(({ name }) => (
@@ -60,7 +64,7 @@ function AddPlayer({ game }: { game: Playable }) {
   return (
     <div>
       Add Player
-      <input value={name} onChange={e => setName(e.target.value)}></input>
+      <input value={name} onChange={(e) => setName(e.target.value)}></input>
       <button
         onClick={() => {
           game.addPlayer(name);

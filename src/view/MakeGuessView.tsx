@@ -43,13 +43,17 @@ export const MakeGuessView = observer(function ({ game }: { game: Playable }) {
           onDelete={(task) => player.guess.delete(task)}
         />
       ))}
-      <button
-        disabled={player.guess.size !== game.players.length - 1}
-        className="button"
-        onClick={() => game.makeYourGuess(player)}
-      >
-        Guess
-      </button>
+      {player.guessConfirmed ? (
+        "Waiting for other players..."
+      ) : (
+        <button
+          disabled={player.guess.size !== game.players.length - 1}
+          className="button"
+          onClick={() => game.makeYourGuess(player)}
+        >
+          Guess
+        </button>
+      )}
     </div>
   );
 });

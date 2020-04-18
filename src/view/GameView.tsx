@@ -35,6 +35,7 @@ export class GameView extends React.Component {
       }
       return (
         <div>
+          {game?.activePlayer?.isOwner ? "New game" : "Join game"}
           <PlayerList game={game} />
           {!game?.activePlayer?.isOwner && <AddPlayer game={game} />}
           {game?.activePlayer?.isOwner && (
@@ -57,7 +58,10 @@ const PlayerList = observer(function ({ game }: { game: Playable }) {
     <ul>
       {game.players.map(({ name }) => (
         <li key={name}>
-          {name} <button onClick={() => game.deletePlayer(name)}>-</button>
+          {name}{" "}
+          {game?.activePlayer?.isOwner && (
+            <button onClick={() => game.deletePlayer(name)}>-</button>
+          )}
         </li>
       ))}
     </ul>

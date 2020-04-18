@@ -20,9 +20,6 @@ export class Game implements Playable {
   isGameFinished: boolean = false;
 
   @observable
-  activePlayerIndex = -1;
-
-  @observable
   roundCounter = 0;
 
   private cardPool = CardPool.getInstance();
@@ -31,26 +28,19 @@ export class Game implements Playable {
 
   activePlayer: Player = null!;
 
-  // @computed
-  // get activePlayer() {
-  //   return this.players[this.activePlayerIndex];
-  // }
-
   constructor() {
     (window as any).Game = this;
   }
 
   start() {
-    console.log("localGame: start");
-    this.roundCounter++;
-    this.letterPool = new LetterPool();
-    this.robot.drawCard(this.cardPool);
-    // temp until parallel playing
-    this.nextPlayer();
+    this.nextRound();
   }
 
   @action
   drawCardAndLetters(player: Player) {
+    // TODO: robot card has to be remote too?
+    this.robot.drawCard(this.cardPool);
+
     player.drawCard(this.cardPool);
     player.drawLetters(this.letterPool!);
   }
@@ -58,17 +48,15 @@ export class Game implements Playable {
   @action
   playWord(player: Player, word: Word) {
     player.playWord(word);
-
-    // temp until parallel playing
-    this.nextPlayer();
   }
 
   @action
   makeYourGuess(player: Player) {
     player.confirmGuess();
 
-    // temp until parallel playing
-    this.nextPlayer();
+    if (this.haveAllPlayersGuessed) {
+      this.givePoints();
+    }
   }
 
   evaluateGuess(guessingPlayer: Player, guess: Guess) {
@@ -84,27 +72,14 @@ export class Game implements Playable {
     }
   }
 
-  nextPlayer() {
-    // fixed for remote game
-    // this.activePlayerIndex = (this.activePlayerIndex + 1) % this.players.length;
+  private givePoints() {
+    this.players.forEach((guessingPlayer) =>
+      this.evaluateGuess(guessingPlayer, guessingPlayer.guess!)
+    );
 
-    if (!this.activePlayer) {
-      return;
-    }
-    if (this.isGuessTime) {
-      // what to do?
-    } else if (this.haveAllPlayersGuessed) {
-      //give points
-      this.players.forEach((guessingPlayer) =>
-        this.evaluateGuess(guessingPlayer, guessingPlayer.guess!)
-      );
-
-      this.isGameFinished = this.players.some((player) =>
-        this.hasWinningScore(player)
-      );
-    } else {
-      this.drawCardAndLetters(this.activePlayer);
-    }
+    this.isGameFinished = this.players.some((player) =>
+      this.hasWinningScore(player)
+    );
   }
 
   hasWinningScore(player: Player) {
@@ -113,12 +88,11 @@ export class Game implements Playable {
 
   nextRound() {
     this.roundCounter++;
-    this.players.forEach((player) => this.resetRound(player));
-
+    if (this.roundCounter > 0) {
+      this.players.forEach((player) => this.resetRound(player));
+    }
     this.letterPool = new LetterPool();
-
-    //temp until parallel playing
-    this.nextPlayer();
+    this.drawCardAndLetters(this.activePlayer);
   }
 
   finishGame() {

@@ -20,16 +20,20 @@ export const PlayWordView = observer(function ({ game }: { game: Playable }) {
       <LetterPool letters={player.letters} />
       <div style={{ display: "flex" }}>
         <Tableau letters={player.letters} />
-        <button
-          className="button"
-          disabled={player.letters.length === 0}
-          style={{ margin: "1em" }}
-          onClick={() => {
-            game.playWord(player, createWord(player.letters));
-          }}
-        >
-          Play
-        </button>
+        {player.word ? (
+          "Waiting for other players..."
+        ) : (
+          <button
+            className="button"
+            disabled={player.letters.length === 0}
+            style={{ margin: "1em" }}
+            onClick={() => {
+              game.playWord(player, createWord(player.letters));
+            }}
+          >
+            Play
+          </button>
+        )}
       </div>
     </div>
   );

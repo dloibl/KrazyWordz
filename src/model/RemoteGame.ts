@@ -33,15 +33,18 @@ export class RemoteGame implements Playable {
       }
     };
 
-    this.firestore.onWordPlayed = (playerName, word) => {
+    this.firestore.onWordPlayed = (playerName, { word, cardId }) => {
       const player = this.getPlayer(playerName);
-      player && this.localGame.playWord(player, new Word(word));
+      if (player) {
+        player.card = CardPool.getInstance().getTask(cardId);
+        player && this.localGame.playWord(player, new Word(word));
+      }
     };
 
     this.firestore.onPlayerGuessed = (playerName, guess) => {
       const player = this.getPlayer(playerName);
-      if (player) {
-        guess.forEach((guessedPlayer, taskId) => {
+      if (player && !player.guessConfirmed) {
+        Object.entries(guess).forEach(([taskId, guessedPlayer]) => {
           const task = CardPool.getInstance().getTask(taskId);
           const p = this.getPlayer(guessedPlayer);
           if (task && p) {
@@ -79,7 +82,10 @@ export class RemoteGame implements Playable {
     this.activePlayer.isOwner = true;
   }
 
-  nextRound() {}
+  nextRound() {
+    this.localGame.nextRound();
+    this.firestore.resetRound();
+  }
 
   deletePlayer(): void {
     throw new Error("Method not implemented.");
@@ -100,13 +106,13 @@ export class RemoteGame implements Playable {
 
   playWord(player: Player, word: Word) {
     this.localGame.playWord(player, word);
-    this.firestore.setWord(player.name, word.word);
+    this.firestore.setWord(player.name, word.word, player.card!.id);
   }
 
   makeYourGuess(player: Player) {
     this.localGame.makeYourGuess(player);
-    const guess = new Map();
-    player.guess.forEach((player, task) => guess.set(task.id, player.name));
+    const guess: { [key: string]: string } = {};
+    player.guess.forEach((player, task) => (guess[task.id] = player.name));
     this.firestore.storeGuess(player.name, guess);
   }
 }

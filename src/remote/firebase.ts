@@ -27,8 +27,11 @@ export class Firestore {
   private localPlayer?: string;
   onPlayerAdded!: (player: string) => void;
   onGameStarted!: () => void;
-  onWordPlayed!: (player: string, word: string) => void;
-  onPlayerGuessed!: (player: string, guess: Map<string, string>) => void;
+  onWordPlayed!: (
+    player: string,
+    wordAndCard: { word: string; cardId: string }
+  ) => void;
+  onPlayerGuessed!: (player: string, guess: { [key: string]: string }) => void;
 
   constructor(private db = firebase.firestore()) {}
 
@@ -58,7 +61,10 @@ export class Firestore {
                 this.onPlayerAdded(data.name);
                 break;
               case ActionType.PLAY_WORD:
-                this.onWordPlayed(player, data.word);
+                this.onWordPlayed(
+                  player,
+                  data as { word: string; cardId: string }
+                );
                 break;
               case ActionType.MAKE_GUESS:
                 this.onPlayerGuessed(player, JSON.parse(data.guess));
@@ -80,6 +86,10 @@ export class Firestore {
     this.subscribe();
   }
 
+  resetRound() {
+    this.getGame().collection("players").doc(this.localPlayer).set({});
+  }
+
   addPlayer(name: string) {
     this.localPlayer = name;
     this.getGame().collection("players").doc(name).set({ name });
@@ -89,16 +99,16 @@ export class Firestore {
     this.getGame().set({ started: true });
   }
 
-  setWord(player: string, word: string) {
-    this.getGame().collection("players").doc(player).set({ word });
+  setWord(player: string, word: string, cardId: string) {
+    this.getGame().collection("players").doc(player).update({ word, cardId });
   }
 
   //guess number: cardId, guess string: player name
-  storeGuess(player: string, guess: Map<string, string>) {
+  storeGuess(player: string, guess: { [key: string]: string }) {
     this.getGame()
       .collection("players")
       .doc(player)
-      .set({ guess: JSON.stringify(guess) });
+      .update({ guess: JSON.stringify(guess) });
   }
 }
 
@@ -106,16 +116,16 @@ function getActionType(data: any) {
   if (data == null) {
     return;
   }
-  if ("started" in data && data.started) {
-    return ActionType.START_GAME;
+  if (data.guess) {
+    return ActionType.MAKE_GUESS;
   }
-  if ("name" in data) {
-    return ActionType.ADD_PLAYER;
-  }
-  if ("word" in data) {
+  if (data.word) {
     return ActionType.PLAY_WORD;
   }
-  if ("guess" in data) {
-    return ActionType.MAKE_GUESS;
+  if (data.started) {
+    return ActionType.START_GAME;
+  }
+  if (data.name) {
+    return ActionType.ADD_PLAYER;
   }
 }

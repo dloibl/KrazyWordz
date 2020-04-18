@@ -5,7 +5,7 @@ import { Tableau } from "./Tableau";
 import { MatchedCard } from "./MatchedCard";
 import { Playable } from "../model/Playable";
 
-export const MakeGuessView = observer(function({ game }: { game: Playable }) {
+export const MakeGuessView = observer(function ({ game }: { game: Playable }) {
   const player = game.activePlayer;
   return (
     <div>
@@ -14,23 +14,23 @@ export const MakeGuessView = observer(function({ game }: { game: Playable }) {
         <div className="task-cards-panel">
           {game.players
             .concat(new Array(game.robot))
-            .filter(p => p !== player)
-            .map(it => it.card!)
-            .filter(card => !player.guess.has(card))
-            .map(card => (
+            .filter((p) => p !== player)
+            .map((it) => it.card!)
+            .filter((card) => card && !player.guess.has(card))
+            .map((card) => (
               <TaskCard key={card.id} task={card} disabled={false} />
             ))}
         </div>
         <div>
           {game.players
-            .filter(p => p !== player)
-            .filter(p => !Array.from(player.guess.values()).includes(p))
-            .map(p => (
+            .filter((p) => p !== player)
+            .filter((p) => !Array.from(player.guess.values()).includes(p))
+            .map((p) => (
               <Tableau
                 key={p.name}
                 disabled={true}
                 letters={p.word!.getLetters()}
-                onDropCard={card => player.addGuess(card, p)}
+                onDropCard={(card) => player.addGuess(card, p)}
               ></Tableau>
             ))}
         </div>
@@ -40,7 +40,7 @@ export const MakeGuessView = observer(function({ game }: { game: Playable }) {
           key={card.id}
           card={card}
           word={p.word!}
-          onDelete={task => player.guess.delete(task)}
+          onDelete={(task) => player.guess.delete(task)}
         />
       ))}
       <button

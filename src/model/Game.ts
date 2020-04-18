@@ -29,16 +29,19 @@ export class Game implements Playable {
 
   private letterPool?: LetterPool;
 
-  @computed
-  get activePlayer() {
-    return this.players[this.activePlayerIndex];
-  }
+  activePlayer: Player = null!;
+
+  // @computed
+  // get activePlayer() {
+  //   return this.players[this.activePlayerIndex];
+  // }
 
   constructor() {
     (window as any).Game = this;
   }
 
   start() {
+    console.log("localGame: start");
     this.roundCounter++;
     this.letterPool = new LetterPool();
     this.robot.drawCard(this.cardPool);
@@ -82,7 +85,9 @@ export class Game implements Playable {
   }
 
   nextPlayer() {
-    this.activePlayerIndex = (this.activePlayerIndex + 1) % this.players.length;
+    // fixed for remote game
+    // this.activePlayerIndex = (this.activePlayerIndex + 1) % this.players.length;
+
     if (!this.activePlayer) {
       return;
     }
@@ -110,7 +115,6 @@ export class Game implements Playable {
     this.roundCounter++;
     this.players.forEach((player) => this.resetRound(player));
 
-    this.letterPool = undefined; //necessary?!
     this.letterPool = new LetterPool();
 
     //temp until parallel playing

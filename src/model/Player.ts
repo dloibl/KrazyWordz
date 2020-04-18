@@ -19,6 +19,8 @@ export class Player {
   guessConfirmed = false;
   @observable
   score = 0;
+  @observable
+  isOwner?: boolean = false;
 
   constructor(public name: string) {}
 

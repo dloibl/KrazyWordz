@@ -26,6 +26,7 @@ export class Firestore {
   private name?: string;
   private localPlayer?: string;
   onPlayerAdded!: (player: string) => void;
+  onGameStarted!: () => void;
   onWordPlayed!: (player: string, word: string) => void;
   onPlayerGuessed!: (player: string, guess: Map<string, string>) => void;
 
@@ -36,6 +37,13 @@ export class Firestore {
   }
 
   subscribe() {
+    this.getGame().onSnapshot((querySnapshot) => {
+      const game = querySnapshot.data();
+      if (getActionType(game) === ActionType.START_GAME) {
+        this.onGameStarted();
+      }
+    });
+
     this.getGame()
       .collection("players")
       .onSnapshot((querySnapshot) => {
@@ -59,6 +67,11 @@ export class Firestore {
           }
         });
       });
+  }
+
+  joinGame(name: string) {
+    this.name = name;
+    this.subscribe();
   }
 
   async newGame(name: string) {
@@ -90,6 +103,12 @@ export class Firestore {
 }
 
 function getActionType(data: any) {
+  if (data == null) {
+    return;
+  }
+  if ("started" in data && data.started) {
+    return ActionType.START_GAME;
+  }
   if ("name" in data) {
     return ActionType.ADD_PLAYER;
   }

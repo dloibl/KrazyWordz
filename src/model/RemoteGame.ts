@@ -10,7 +10,9 @@ export class RemoteGame implements Playable {
   localGame: Game = new Game();
   @observable
   name?: string;
-  isStarted: boolean = false; // TODO
+  get isStarted() {
+    return this.localGame.isStarted;
+  }
   get haveAllPlayersGuessed() {
     return this.localGame.haveAllPlayersGuessed;
   }
@@ -18,11 +20,18 @@ export class RemoteGame implements Playable {
     return this.localGame.isGuessTime;
   }
   players: Player[] = this.localGame.players;
-  activePlayer: Player = null!;
+  activePlayer: Player & { isOwner?: boolean } = null!;
   robot: Player = this.localGame.robot;
 
   constructor(private firestore = new Firestore()) {
     this.firestore.onPlayerAdded = this.localGame.addPlayer;
+
+    this.firestore.onGameStarted = () => {
+      if (this.name && this.activePlayer) {
+        console.log("Starting game");
+        this.localGame.start();
+      }
+    };
 
     this.firestore.onWordPlayed = (playerName, word) => {
       const player = this.getPlayer(playerName);
@@ -48,11 +57,26 @@ export class RemoteGame implements Playable {
     return this.players.find((it) => it.name === name);
   }
 
-  createGame(name: string, winningPoints?: number) {
+  joinGame(name: string) {
+    this.name = name;
+    this.firestore.joinGame(name);
+  }
+
+  createGame({
+    name,
+    winningPoints,
+    owner,
+  }: {
+    name: string;
+    winningPoints?: number;
+    owner: string;
+  }) {
     this.name = name;
     // todo rounds
     this.localGame.winningScore = winningPoints || 15;
     this.firestore.newGame(name);
+    this.addPlayer(owner);
+    this.activePlayer.isOwner = true;
   }
 
   nextRound() {}
@@ -70,6 +94,7 @@ export class RemoteGame implements Playable {
     this.firestore.addPlayer(name);
     this.localGame.addPlayer(name);
     this.activePlayer = this.players.find((it) => it.name === name)!;
+    this.localGame.activePlayer = this.activePlayer;
     // TODO: sync with localstorage to enable browser refresh
   }
 

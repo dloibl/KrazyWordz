@@ -6,8 +6,11 @@ import { TaskCard } from "./TaskCard";
 import { LetterPool } from "./LetterPool";
 import { createWord } from "../model/Letter";
 
-export const PlayWordView = observer(function({ game }: { game: Playable }) {
+export const PlayWordView = observer(function ({ game }: { game: Playable }) {
   const player = game.activePlayer;
+  if (!player.card || !player.letters) {
+    return <div>"Drawing a card and letters..."</div>;
+  }
   return (
     <div>
       <h3>It's your turn {player.name}</h3>

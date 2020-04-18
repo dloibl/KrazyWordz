@@ -16,6 +16,12 @@ export class GameView extends React.Component {
 
   async componentDidMount() {
     this.game = await createGame(window.location.search.includes("remote"));
+    if (this.game instanceof RemoteGame) {
+      const joinGame = new URLSearchParams(window.location.search).get("join");
+      if (joinGame) {
+        this.game.joinGame(joinGame);
+      }
+    }
   }
 
   render() {
@@ -30,8 +36,10 @@ export class GameView extends React.Component {
       return (
         <div>
           <PlayerList game={game} />
-          <AddPlayer game={game} />
-          <button onClick={() => game.start()}>Start Game</button>
+          {!game?.activePlayer?.isOwner && <AddPlayer game={game} />}
+          {game?.activePlayer?.isOwner && (
+            <button onClick={() => game.start()}>Start Game</button>
+          )}
         </div>
       );
     } else if (game.isGuessTime) {
@@ -63,7 +71,7 @@ function AddPlayer({ game }: { game: Playable }) {
   }
   return (
     <div>
-      Add Player
+      {game instanceof RemoteGame ? "Join" : "Add Player"}
       <input value={name} onChange={(e) => setName(e.target.value)}></input>
       <button
         onClick={() => {

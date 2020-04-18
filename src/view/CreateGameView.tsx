@@ -2,12 +2,18 @@ import React, { useState } from "react";
 import { RemoteGame } from "../model/RemoteGame";
 
 export function CreateGameView({ game }: { game: RemoteGame }) {
-  const [name, setName] = useState("");
+  const [name, setName] = useState(
+    Math.random()
+      .toString(36)
+      .replace(/[^a-z]+/g, "")
+      .substr(0, 10)
+  );
+  const [player, setPlayer] = useState("");
   const [winningPoints, setWinningPoints] = useState(15);
   return (
     <div style={{ display: "flex", flexDirection: "column", margin: "2rem" }}>
       <h2>Create a new CrazyWords Game</h2>
-      Name
+      Name of game
       <input
         type="text"
         value={name}
@@ -19,9 +25,19 @@ export function CreateGameView({ game }: { game: RemoteGame }) {
         value={winningPoints}
         onChange={(e) => setWinningPoints(Number(e.target.value))}
       />
+      Your name
+      <input
+        type="text"
+        value={player}
+        onChange={(e) => setPlayer(e.target.value)}
+      />
+      Join Link:
+      <a href={window.location.href + `&join=${name}`}>
+        {window.location.href + `&join=${name}`}
+      </a>
       <button
         className="button"
-        onClick={() => game.createGame(name, winningPoints)}
+        onClick={() => game.createGame({ owner: player, name, winningPoints })}
       >
         Create
       </button>

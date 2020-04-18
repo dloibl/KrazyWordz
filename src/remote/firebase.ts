@@ -9,7 +9,7 @@ var firebaseConfig = {
   storageBucket: "krazywordz-98c48.appspot.com",
   messagingSenderId: "898573562197",
   appId: "1:898573562197:web:5e66487a4ddcd74361bfdc",
-  measurementId: "G-MHSVRWEX5B"
+  measurementId: "G-MHSVRWEX5B",
 };
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
@@ -19,13 +19,15 @@ enum ActionType {
   START_GAME,
   ADD_PLAYER,
   PLAY_WORD,
-  MAKE_GUESS
+  MAKE_GUESS,
 }
 
 export class Firestore {
   private name?: string;
   private localPlayer?: string;
-  onPlayerAdded!: (p: string) => void;
+  onPlayerAdded!: (player: string) => void;
+  onWordPlayed!: (player: string, word: string) => void;
+  onPlayerGuessed!: (player: string, guess: Map<string, string>) => void;
 
   constructor(private db = firebase.firestore()) {}
 
@@ -36,9 +38,9 @@ export class Firestore {
   subscribe() {
     this.getGame()
       .collection("players")
-      .onSnapshot(querySnapshot => {
+      .onSnapshot((querySnapshot) => {
         // const numberOfPlayers = querySnapshot.size;
-        querySnapshot.forEach(doc => {
+        querySnapshot.forEach((doc) => {
           const player = doc.id;
           if (player !== this.localPlayer) {
             const data = doc.data(); // {word: "", guess}
@@ -46,6 +48,12 @@ export class Firestore {
             switch (getActionType(data)) {
               case ActionType.ADD_PLAYER:
                 this.onPlayerAdded(data.name);
+                break;
+              case ActionType.PLAY_WORD:
+                this.onWordPlayed(player, data.word);
+                break;
+              case ActionType.MAKE_GUESS:
+                this.onPlayerGuessed(player, JSON.parse(data.guess));
                 break;
             }
           }
@@ -61,10 +69,7 @@ export class Firestore {
 
   addPlayer(name: string) {
     this.localPlayer = name;
-    this.getGame()
-      .collection("players")
-      .doc(name)
-      .set({ name });
+    this.getGame().collection("players").doc(name).set({ name });
   }
 
   startGame() {
@@ -72,10 +77,7 @@ export class Firestore {
   }
 
   setWord(player: string, word: string) {
-    this.getGame()
-      .collection("players")
-      .doc(player)
-      .set({ word });
+    this.getGame().collection("players").doc(player).set({ word });
   }
 
   //guess number: cardId, guess string: player name
@@ -90,5 +92,11 @@ export class Firestore {
 function getActionType(data: any) {
   if ("name" in data) {
     return ActionType.ADD_PLAYER;
+  }
+  if ("word" in data) {
+    return ActionType.PLAY_WORD;
+  }
+  if ("guess" in data) {
+    return ActionType.MAKE_GUESS;
   }
 }

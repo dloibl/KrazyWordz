@@ -4,21 +4,48 @@ import { Player } from "./Player";
 import { Word } from ".";
 import { Playable } from "./Playable";
 import { observable } from "mobx";
+import { CardPool } from "./CardPool";
 
 export class RemoteGame implements Playable {
   localGame: Game = new Game();
   @observable
   name?: string;
   isStarted: boolean = false; // TODO
-  haveAllPlayersGuessed: boolean = false; // TODO
-  isGuessTime: boolean = false; // TODO
+  get haveAllPlayersGuessed() {
+    return this.localGame.haveAllPlayersGuessed;
+  }
+  get isGuessTime() {
+    return this.localGame.isGuessTime;
+  }
   players: Player[] = this.localGame.players;
   activePlayer: Player = null!;
   robot: Player = this.localGame.robot;
 
   constructor(private firestore = new Firestore()) {
     this.firestore.onPlayerAdded = this.localGame.addPlayer;
-    // this.firesotre.onWordPlaay = super.playWord
+
+    this.firestore.onWordPlayed = (playerName, word) => {
+      const player = this.getPlayer(playerName);
+      player && this.localGame.playWord(player, new Word(word));
+    };
+
+    this.firestore.onPlayerGuessed = (playerName, guess) => {
+      const player = this.getPlayer(playerName);
+      if (player) {
+        guess.forEach((guessedPlayer, taskId) => {
+          const task = CardPool.getInstance().getTask(taskId);
+          const p = this.getPlayer(guessedPlayer);
+          if (task && p) {
+            player.addGuess(task, p);
+          }
+        });
+        this.localGame.makeYourGuess(player);
+      }
+    };
+  }
+
+  private getPlayer(name: string) {
+    return this.players.find((it) => it.name === name);
   }
 
   createGame(name: string, winningPoints?: number) {

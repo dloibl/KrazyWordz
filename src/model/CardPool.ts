@@ -21,4 +21,8 @@ export class CardPool {
     this.cards.splice(index, 1);
     return card;
   }
+
+  getTask(id: string) {
+    return this.cards.find((it) => it.id === id);
+  }
 }

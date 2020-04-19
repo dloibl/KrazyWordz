@@ -19,7 +19,7 @@ export const PlayWordView = observer(function ({ game }: { game: Playable }) {
       Your available letters:
       <LetterPool letters={player.letters} />
       <div style={{ display: "flex" }}>
-        <Tableau letters={player.letters} />
+        <Tableau color={player.color} letters={player.letters} />
         {player.word ? (
           "Waiting for other players..."
         ) : (

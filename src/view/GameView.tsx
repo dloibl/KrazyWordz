@@ -56,8 +56,8 @@ export class GameView extends React.Component {
 const PlayerList = observer(function ({ game }: { game: Playable }) {
   return (
     <ul>
-      {game.players.map(({ name }) => (
-        <li key={name}>
+      {game.players.map(({ name, color }) => (
+        <li style={{ color }} key={name}>
           {name}{" "}
           {game?.activePlayer?.isOwner && (
             <button onClick={() => game.deletePlayer(name)}>-</button>

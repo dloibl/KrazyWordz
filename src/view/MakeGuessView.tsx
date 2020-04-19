@@ -29,6 +29,7 @@ export const MakeGuessView = observer(function ({ game }: { game: Playable }) {
               <Tableau
                 key={p.name}
                 disabled={true}
+                color={p.color}
                 letters={p.word!.getLetters()}
                 onDropCard={(card) => player.addGuess(card, p)}
               ></Tableau>
@@ -40,6 +41,7 @@ export const MakeGuessView = observer(function ({ game }: { game: Playable }) {
           key={card.id}
           card={card}
           word={p.word!}
+          color={p.color}
           onDelete={(task) => player.guess.delete(task)}
         />
       ))}

@@ -26,7 +26,7 @@ export class Player {
   @observable
   isOwner?: boolean = false;
 
-  constructor(public name: string) {}
+  constructor(public name: string, public color: string = "blue") {}
 
   drawCard(cardPool: CardPool) {
     this.card = cardPool.draw();

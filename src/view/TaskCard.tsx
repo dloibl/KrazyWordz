@@ -5,7 +5,7 @@ import { ItemTypes } from "./ItemTypes";
 
 export function TaskCard({
   task,
-  disabled = true
+  disabled = true,
 }: {
   task: Task;
   disabled?: boolean;
@@ -13,13 +13,19 @@ export function TaskCard({
   const [, drag] = useDrag({
     item: {
       type: ItemTypes.CARD,
-      card: task
+      card: task,
     },
-    canDrag: () => !disabled
+    canDrag: () => !disabled,
   });
 
   return (
-    <div ref={drag} className="task-card">
+    <div
+      ref={drag}
+      className="task-card"
+      style={{
+        borderColor: "darkgray",
+      }}
+    >
       {task.task}
     </div>
   );

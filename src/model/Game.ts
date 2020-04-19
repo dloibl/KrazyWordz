@@ -140,6 +140,12 @@ export class Game implements Playable {
       console.warn(`Player with ${name} already exists`);
       return;
     }
-    this.players.push(new Player(name));
+    this.players.push(new Player(name, this.computeColor(this.players.length)));
   };
+
+  private computeColor(index: number) {
+    const colors = ["red", "blue", "green", "teal", "pink", "purple", "orange"];
+
+    return colors[index];
+  }
 }

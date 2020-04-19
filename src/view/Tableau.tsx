@@ -8,14 +8,14 @@ import {
   getLastPlayedLetter,
   getUnplayedLetters,
   getSortedPlayedLetters,
-  getNextPosition
+  getNextPosition,
 } from "../model/Letter";
 
-export const Tableau = observer(function({
+export const Tableau = observer(function ({
   color = "teal",
   letters = [],
   disabled = false,
-  onDropCard
+  onDropCard,
 }: {
   color?: string;
   letters: Letter[];
@@ -24,7 +24,7 @@ export const Tableau = observer(function({
 }) {
   const [{ isOver }, drop] = useDrop({
     accept: [ItemTypes.LETTER, ItemTypes.CARD],
-    drop: drop => {
+    drop: (drop) => {
       if (drop.type === ItemTypes.LETTER) {
         const letter = ((drop as any) as { letter: Letter }).letter;
         letter.position = getNextPosition(letters);
@@ -33,9 +33,9 @@ export const Tableau = observer(function({
         onDropCard((drop as any).card);
       }
     },
-    collect: mon => ({
-      isOver: !!mon.isOver()
-    })
+    collect: (mon) => ({
+      isOver: !!mon.isOver(),
+    }),
   });
 
   const handleInput = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -43,7 +43,7 @@ export const Tableau = observer(function({
       getLastPlayedLetter(letters).position = undefined;
     } else {
       const letter = getUnplayedLetters(letters).find(
-        it => it.value.toUpperCase() === e.key.toUpperCase()
+        (it) => it.value.toUpperCase() === e.key.toUpperCase()
       );
       if (letter) {
         letter.position = getNextPosition(letters);
@@ -56,7 +56,7 @@ export const Tableau = observer(function({
       ref={drop}
       className={`tableau ${isOver ? "dropping" : ""}`}
       style={{
-        borderColor: color
+        borderColor: color,
       }}
     >
       {getSortedPlayedLetters(letters).map((letter, index) => (

@@ -15,11 +15,12 @@ export const FinishRoundView = observer(function ({
         <h3>Solution</h3>
         {game.players.map((player) => (
           <div key={player.name}>
-            {player.name} said:
+            <p style={{ color: player.color }}> {player.name} </p> played:
             <MatchedCard
               key={player.card!.id}
               card={player.card!}
               word={player.word!}
+              color={player.color}
             />
             This was guessed correctly by{" "}
             {getCorrectGuesserAsString(game.players, player)}
@@ -32,8 +33,9 @@ export const FinishRoundView = observer(function ({
       <div>
         {game.players.map((player) => (
           <div key={player.name}>
-            {player.name} earned {player.roundScore} points in this round and
-            therefore has now {player.totalScore} points!{" "}
+            <p style={{ color: player.color }}> {player.name} </p> earned{" "}
+            {player.roundScore} points in this round and therefore has now{" "}
+            {player.totalScore} points!{" "}
           </div>
         ))}
       </div>

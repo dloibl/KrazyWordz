@@ -1,5 +1,5 @@
 import { Player } from "./Player";
-import { observable, computed, action } from "mobx";
+import { observable, computed, action, values } from "mobx";
 import { Word } from "./Word";
 import { Guess } from "./Guess";
 import { Task } from "./Task";
@@ -67,6 +67,7 @@ export class Game implements Playable {
 
   distributePoints(guessingPlayer: Player, task: Task, player: Player) {
     if (player.card?.id === task.id) {
+      guessingPlayer.correctGuesses++;
       guessingPlayer.addScorePoint();
       player.addScorePoint();
     }
@@ -83,7 +84,7 @@ export class Game implements Playable {
   }
 
   hasWinningScore(player: Player) {
-    return player.score >= this.winningScore;
+    return player.totalScore >= this.winningScore;
   }
 
   nextRound() {
@@ -105,6 +106,7 @@ export class Game implements Playable {
     player.resetWord();
     player.resetTask();
     player.resetGuessConfirmation();
+    player.resetRoundScore();
     this.robot.resetTask();
   }
 

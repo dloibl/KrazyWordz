@@ -2,16 +2,21 @@ import React from "react";
 import { observer } from "mobx-react";
 import { Playable } from "../model/Playable";
 
-export const FinishRoundView = observer(function({ game }: { game: Playable }) {
+export const FinishRoundView = observer(function ({
+  game,
+}: {
+  game: Playable;
+}) {
   return (
     <div>
       <h3>See what the players have guessed</h3>
       <div>
-        {game.players.map(player => (
+        {game.players.map((player) => (
           <div key={player.name}>
             {" "}
-            {player.name} guessed: xyz and earned xxx points and therefore has
-            now {player.score} points!{" "}
+            {player.name} guessed {player.correctGuesses} words correctly.{" "}
+            {player.name} earned {player.roundScore} points in this round and
+            therefore has now {player.totalScore} points!{" "}
           </div>
         ))}
       </div>

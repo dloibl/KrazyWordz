@@ -18,7 +18,11 @@ export class Player {
   @observable
   guessConfirmed = false;
   @observable
-  score = 0;
+  totalScore = 0;
+  @observable
+  roundScore = 0;
+  @observable
+  correctGuesses = 0;
   @observable
   isOwner?: boolean = false;
 
@@ -50,7 +54,8 @@ export class Player {
   }
 
   addScorePoint() {
-    this.score++;
+    this.roundScore++;
+    this.totalScore++;
   }
 
   resetTask() {
@@ -69,7 +74,15 @@ export class Player {
     this.guess.clear();
   }
 
-  resetScore() {
-    this.score = 0;
+  resetTotalScore() {
+    this.totalScore = 0;
+  }
+
+  resetRoundScore() {
+    this.roundScore = 0;
+  }
+
+  resetCorrectGuesses() {
+    this.correctGuesses = 0;
   }
 }

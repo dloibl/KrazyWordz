@@ -15,13 +15,6 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 // firebase.analytics();
 
-enum ActionType {
-  START_GAME,
-  ADD_PLAYER,
-  PLAY_WORD,
-  MAKE_GUESS,
-}
-
 export class Firestore {
   private name?: string;
   private localPlayer?: string;
@@ -32,6 +25,7 @@ export class Firestore {
     wordAndCard: { word: string; cardId: string }
   ) => void;
   onPlayerGuessed!: (player: string, guess: { [key: string]: string }) => void;
+  onSyncAdditionalCard!: (cardId: string) => void;
 
   constructor(private db = firebase.firestore()) {}
 
@@ -42,33 +36,35 @@ export class Firestore {
   subscribe() {
     this.getGame().onSnapshot((querySnapshot) => {
       const game = querySnapshot.data();
-      if (getActionType(game) === ActionType.START_GAME) {
+      console.log("received game event", game);
+      if (!game) {
+        return;
+      }
+      if (isStartGame(game)) {
         this.onGameStarted();
+      }
+      if (isSyncAdditionalCard(game)) {
+        this.onSyncAdditionalCard(game.additionalCardId);
       }
     });
 
     this.getGame()
       .collection("players")
       .onSnapshot((querySnapshot) => {
-        // const numberOfPlayers = querySnapshot.size;
         querySnapshot.forEach((doc) => {
           const player = doc.id;
           if (player !== this.localPlayer) {
-            const data = doc.data(); // {word: "", guess}
-            console.log(data, player);
-            switch (getActionType(data)) {
-              case ActionType.ADD_PLAYER:
-                this.onPlayerAdded(data.name);
-                break;
-              case ActionType.PLAY_WORD:
-                this.onWordPlayed(
-                  player,
-                  data as { word: string; cardId: string }
-                );
-                break;
-              case ActionType.MAKE_GUESS:
-                this.onPlayerGuessed(player, JSON.parse(data.guess));
-                break;
+            const data = doc.data();
+            console.log("received player event", player, data);
+            if (isMakeGuess(data)) {
+              this.onPlayerGuessed(player, JSON.parse(data.guess));
+            } else if (isPlayWord(data)) {
+              this.onWordPlayed(
+                player,
+                data as { word: string; cardId: string }
+              );
+            } else if (isAddPlayer(data)) {
+              this.onPlayerAdded(data.name);
             }
           }
         });
@@ -86,8 +82,11 @@ export class Firestore {
     this.subscribe();
   }
 
-  resetRound() {
+  resetRound({ additionalCardId = undefined as string | undefined }) {
     this.getGame().collection("players").doc(this.localPlayer).set({});
+    if (additionalCardId) {
+      this.getGame().update({ additionalCardId });
+    }
   }
 
   addPlayer(name: string) {
@@ -95,12 +94,15 @@ export class Firestore {
     this.getGame().collection("players").doc(name).set({ name });
   }
 
-  startGame() {
-    this.getGame().set({ started: true });
+  startGame({ additionalCardId = undefined as string | undefined }) {
+    this.getGame().set({ started: true, additionalCardId });
   }
 
   setWord(player: string, word: string, cardId: string) {
-    this.getGame().collection("players").doc(player).update({ word, cardId });
+    this.getGame()
+      .collection("players")
+      .doc(player)
+      .update({ word, cardId, guess: null });
   }
 
   //guess number: cardId, guess string: player name
@@ -112,20 +114,8 @@ export class Firestore {
   }
 }
 
-function getActionType(data: any) {
-  if (data == null) {
-    return;
-  }
-  if (data.guess) {
-    return ActionType.MAKE_GUESS;
-  }
-  if (data.word) {
-    return ActionType.PLAY_WORD;
-  }
-  if (data.started) {
-    return ActionType.START_GAME;
-  }
-  if (data.name) {
-    return ActionType.ADD_PLAYER;
-  }
-}
+const isMakeGuess = (data: any) => !!data.guess;
+const isPlayWord = (data: any) => data.word != null && data.guess == null;
+const isSyncAdditionalCard = (data: any) => data.additionalCardId != null;
+const isStartGame = (data: any) => data.started === true;
+const isAddPlayer = (data: any) => data.name != null && data.word == null;

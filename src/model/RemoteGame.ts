@@ -27,9 +27,15 @@ export class RemoteGame implements Playable {
     this.firestore.onPlayerAdded = this.localGame.addPlayer;
 
     this.firestore.onGameStarted = () => {
-      if (this.name && this.activePlayer) {
+      if (this.name && this.activePlayer && !this.localGame.isStarted) {
         console.log("Starting game");
         this.localGame.start();
+      }
+    };
+
+    this.firestore.onSyncAdditionalCard = (cardId) => {
+      if (cardId != null && !this.localGame.robot.card) {
+        this.localGame.robot.card = CardPool.getInstance().getTask(cardId);
       }
     };
 
@@ -43,6 +49,7 @@ export class RemoteGame implements Playable {
 
     this.firestore.onPlayerGuessed = (playerName, guess) => {
       const player = this.getPlayer(playerName);
+      console.log("get guess for player", player, player!.guessConfirmed);
       if (player && !player.guessConfirmed) {
         Object.entries(guess).forEach(([taskId, guessedPlayer]) => {
           const task = CardPool.getInstance().getTask(taskId);
@@ -84,7 +91,11 @@ export class RemoteGame implements Playable {
 
   nextRound() {
     this.localGame.nextRound();
-    this.firestore.resetRound();
+    this.firestore.resetRound({
+      additionalCardId: this.activePlayer.isOwner
+        ? this.localGame.robot.card?.id
+        : undefined,
+    });
   }
 
   deletePlayer(): void {
@@ -93,7 +104,11 @@ export class RemoteGame implements Playable {
 
   start() {
     this.localGame.start();
-    this.firestore.startGame();
+    this.firestore.startGame({
+      additionalCardId: this.activePlayer.isOwner
+        ? this.localGame.robot.card?.id
+        : undefined,
+    });
   }
 
   addPlayer(name: string) {

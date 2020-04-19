@@ -13,7 +13,7 @@ export const MakeGuessView = observer(function ({ game }: { game: Playable }) {
       <div className="match-panel">
         <div className="task-cards-panel">
           {game.players
-            .concat(new Array(game.robot))
+            .concat([game.robot])
             .filter((p) => p !== player)
             .map((it) => it.card!)
             .filter((card) => card && !player.guess.has(card))

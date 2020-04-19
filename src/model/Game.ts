@@ -38,9 +38,9 @@ export class Game implements Playable {
 
   @action
   drawCardAndLetters(player: Player) {
-    // TODO: robot card has to be remote too?
-    this.robot.drawCard(this.cardPool);
-
+    if (player.isOwner) {
+      this.robot.drawCard(this.cardPool);
+    }
     player.drawCard(this.cardPool);
     player.drawLetters(this.letterPool!);
   }
@@ -105,6 +105,7 @@ export class Game implements Playable {
     player.resetWord();
     player.resetTask();
     player.resetGuessConfirmation();
+    this.robot.resetTask();
   }
 
   @computed

@@ -95,6 +95,7 @@ export class RemoteGame implements Playable {
       additionalCardId: this.activePlayer.isOwner
         ? this.localGame.robot.card?.id
         : undefined,
+      score: this.activePlayer.totalScore,
     });
   }
 

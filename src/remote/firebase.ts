@@ -82,8 +82,14 @@ export class Firestore {
     this.subscribe();
   }
 
-  resetRound({ additionalCardId = undefined as string | undefined }) {
-    this.getGame().collection("players").doc(this.localPlayer).set({});
+  resetRound({
+    additionalCardId = undefined as string | undefined,
+    score = 0,
+  }) {
+    this.getGame()
+      .collection("players")
+      .doc(this.localPlayer)
+      .set({ totalScore: score });
     if (additionalCardId) {
       this.getGame().update({ additionalCardId });
     }

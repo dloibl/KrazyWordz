@@ -8,7 +8,19 @@ import Backend from "react-dnd-html5-backend";
 ReactDOM.render(
   <React.StrictMode>
     <DndProvider backend={Backend}>
-      <GameView />
+      <header>
+        <span className="header-title">
+          CRAZY W
+          <span role="img" aria-label="O">
+            😋
+          </span>
+          RDS
+        </span>
+      </header>
+      <div className="content">
+        <GameView />
+      </div>
+      <footer>v0.0.1</footer>
     </DndProvider>
   </React.StrictMode>,
   document.getElementById("root")

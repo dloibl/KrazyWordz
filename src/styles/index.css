@@ -2,6 +2,51 @@
   font-family: "Helvetica Neue", Arial, sans-serif;
 }
 
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+header {
+  display: flex;
+  flex: 0 0 auto;
+  height: 4rem;
+  background: rgb(70, 0, 70);
+  align-items: center;
+  justify-content: center;
+}
+.header-title {
+  color: white;
+  font-size: xx-large;
+}
+
+.content {
+  flex: 1 1 auto;
+  background: rgb(96, 2, 96);
+  position: relative; /* need this to position inner content */
+  overflow-y: auto;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+footer {
+  flex: 0 0 auto;
+  height: 2rem;
+  background: black;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 1rem;
+}
+
 .letters {
   margin: 1em;
   display: flex;

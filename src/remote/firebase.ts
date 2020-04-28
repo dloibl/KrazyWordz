@@ -15,19 +15,32 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 // firebase.analytics();
 
+interface EventHandler {
+  onPlayerEvent(
+    playerName: string,
+    data: {
+      name: string;
+      word?: string;
+      cardId?: string;
+      guess?: string;
+      totalScore?: number;
+    }
+  ): void;
+  onGameEvent: (gameData: {
+    started: boolean;
+    additionalCardId: string;
+    owner: string;
+  }) => void;
+}
+
 export class Firestore {
   private name?: string;
   private localPlayer?: string;
-  onPlayerAdded!: (player: string) => void;
-  onGameStarted!: () => void;
-  onWordPlayed!: (
-    player: string,
-    wordAndCard: { word: string; cardId: string }
-  ) => void;
-  onPlayerGuessed!: (player: string, guess: { [key: string]: string }) => void;
-  onSyncAdditionalCard!: (cardId: string) => void;
 
-  constructor(private db = firebase.firestore()) {}
+  constructor(
+    private handler: EventHandler,
+    private db = firebase.firestore()
+  ) {}
 
   private getGame() {
     return this.db.collection("games").doc(this.name);
@@ -35,17 +48,9 @@ export class Firestore {
 
   subscribe() {
     this.getGame().onSnapshot((querySnapshot) => {
-      const game = querySnapshot.data();
+      const game: any = querySnapshot.data();
       console.log("received game event", game);
-      if (!game) {
-        return;
-      }
-      if (isStartGame(game)) {
-        this.onGameStarted();
-      }
-      if (isSyncAdditionalCard(game)) {
-        this.onSyncAdditionalCard(game.additionalCardId);
-      }
+      game && this.handler.onGameEvent(game);
     });
 
     this.getGame()
@@ -53,20 +58,11 @@ export class Firestore {
       .onSnapshot((querySnapshot) => {
         querySnapshot.forEach((doc) => {
           const player = doc.id;
-          if (player !== this.localPlayer) {
-            const data = doc.data();
-            console.log("received player event", player, data);
-            if (isMakeGuess(data)) {
-              this.onPlayerGuessed(player, JSON.parse(data.guess));
-            } else if (isPlayWord(data)) {
-              this.onWordPlayed(
-                player,
-                data as { word: string; cardId: string }
-              );
-            } else if (isAddPlayer(data)) {
-              this.onPlayerAdded(data.name);
-            }
-          }
+          //if (player !== this.localPlayer) {
+          const data: any = doc.data();
+          console.log("received player event", player, data);
+          this.handler.onPlayerEvent(player, data);
+          //}
         });
       });
   }
@@ -76,16 +72,13 @@ export class Firestore {
     this.subscribe();
   }
 
-  async newGame(name: string) {
+  async newGame(name: string, owner: string) {
     this.name = name;
-    this.getGame().set({ started: false });
-    this.subscribe();
+    await this.getGame().set({ started: false, owner });
+    await this.subscribe();
   }
 
-  resetRound({
-    additionalCardId = undefined as string | undefined,
-    score = 0,
-  }) {
+  resetRound({ additionalCardId = "" as string, score = 0 }) {
     this.getGame()
       .collection("players")
       .doc(this.localPlayer)
@@ -95,9 +88,13 @@ export class Firestore {
     }
   }
 
-  addPlayer(name: string) {
+  setLocalPlayer(name: string) {
     this.localPlayer = name;
-    this.getGame().collection("players").doc(name).set({ name });
+  }
+
+  addPlayer(name: string) {
+    this.setLocalPlayer(name);
+    return this.getGame().collection("players").doc(name).set({ name });
   }
 
   startGame({ additionalCardId = undefined as string | undefined }) {
@@ -119,9 +116,3 @@ export class Firestore {
       .update({ guess: JSON.stringify(guess) });
   }
 }
-
-const isMakeGuess = (data: any) => !!data.guess;
-const isPlayWord = (data: any) => data.word != null && data.guess == null;
-const isSyncAdditionalCard = (data: any) => data.additionalCardId != null;
-const isStartGame = (data: any) => data.started === true;
-const isAddPlayer = (data: any) => data.name != null && data.word == null;

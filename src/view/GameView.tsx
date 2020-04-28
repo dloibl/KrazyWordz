@@ -17,9 +17,12 @@ export class GameView extends React.Component {
   async componentDidMount() {
     this.game = await createGame(window.location.search.includes("remote"));
     if (this.game instanceof RemoteGame) {
-      const joinGame = new URLSearchParams(window.location.search).get("join");
-      if (joinGame) {
-        this.game.joinGame(joinGame);
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("join")) {
+        this.game.joinGame(params.get("join")!);
+      }
+      if (params.has("player")) {
+        this.game.setActivePlayer(params.get("player")!);
       }
     }
   }
@@ -33,16 +36,7 @@ export class GameView extends React.Component {
       if (game instanceof RemoteGame && !game.name) {
         return <CreateGameView game={game} />;
       }
-      return (
-        <div>
-          {game?.activePlayer?.isOwner ? "New game" : "Join game"}
-          <PlayerList game={game} />
-          {!game?.activePlayer?.isOwner && <AddPlayer game={game} />}
-          {game?.activePlayer?.isOwner && (
-            <button onClick={() => game.start()}>Start Game</button>
-          )}
-        </div>
-      );
+      return <JoinGameView game={game} />;
     } else if (game.isGuessTime) {
       return <MakeGuessView game={game} />;
     } else if (game.haveAllPlayersGuessed) {
@@ -52,6 +46,18 @@ export class GameView extends React.Component {
     }
   }
 }
+
+const JoinGameView = observer(function ({ game }: { game: Playable }) {
+  const owner = game?.activePlayer?.isOwner;
+  return (
+    <div>
+      {owner ? "New game" : "Join game"}
+      <PlayerList game={game} />
+      {!owner && <AddPlayer game={game} />}
+      {owner && <button onClick={() => game.start()}>Start Game</button>}
+    </div>
+  );
+});
 
 const PlayerList = observer(function ({ game }: { game: Playable }) {
   return (

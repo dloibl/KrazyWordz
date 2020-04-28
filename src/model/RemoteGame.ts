@@ -20,36 +20,75 @@ export class RemoteGame implements Playable {
     return this.localGame.isGuessTime;
   }
   players: Player[] = this.localGame.players;
+  @observable
   activePlayer: Player & { isOwner?: boolean } = null!;
   robot: Player = this.localGame.robot;
 
-  constructor(private firestore = new Firestore()) {
-    this.firestore.onPlayerAdded = this.localGame.addPlayer;
+  constructor(
+    private firestore = new Firestore({
+      onGameEvent: (game) => this.syncGameState(game),
+      onPlayerEvent: (playerName, data) => {
+        this.syncPlayer(playerName);
+        this.syncWordAndCard(playerName, data);
+        this.syncGuess(playerName, data);
+        this.syncScore(playerName, data);
+      },
+    })
+  ) {}
 
-    this.firestore.onGameStarted = () => {
-      if (this.name && this.activePlayer && !this.localGame.isStarted) {
-        console.log("Starting game");
-        this.localGame.start();
-      }
-    };
+  private syncGameState({
+    additionalCardId,
+    started,
+    owner,
+  }: {
+    additionalCardId: string;
+    started: boolean;
+    owner: string;
+  }) {
+    if (
+      started &&
+      this.name &&
+      this.activePlayer &&
+      !this.localGame.isStarted
+    ) {
+      console.log("Starting game");
+      this.localGame.start();
+    }
+    if (additionalCardId != null && !this.localGame.robot.card) {
+      this.localGame.robot.card = CardPool.getInstance().getTask(
+        additionalCardId
+      );
+    }
+    if (owner && this.activePlayer?.name === owner) {
+      this.activePlayer.isOwner = true;
+    }
+  }
 
-    this.firestore.onSyncAdditionalCard = (cardId) => {
-      if (cardId != null && !this.localGame.robot.card) {
-        this.localGame.robot.card = CardPool.getInstance().getTask(cardId);
-      }
-    };
-
-    this.firestore.onWordPlayed = (playerName, { word, cardId }) => {
+  private syncScore(
+    playerName: string,
+    data: {
+      totalScore?: number | undefined;
+    }
+  ) {
+    if (data.totalScore) {
       const player = this.getPlayer(playerName);
-      if (player) {
-        player.card = CardPool.getInstance().getTask(cardId);
-        player && this.localGame.playWord(player, new Word(word));
+      if (player && !player.totalScore) {
+        player.totalScore = data.totalScore;
       }
-    };
+    }
+  }
 
-    this.firestore.onPlayerGuessed = (playerName, guess) => {
+  private syncGuess(
+    playerName: string,
+    data: {
+      guess?: string;
+    }
+  ) {
+    if (data.guess) {
       const player = this.getPlayer(playerName);
-      console.log("get guess for player", player, player!.guessConfirmed);
+      const guess: {
+        [key: string]: string;
+      } = JSON.parse(data.guess);
       if (player && !player.guessConfirmed) {
         Object.entries(guess).forEach(([taskId, guessedPlayer]) => {
           const task = CardPool.getInstance().getTask(taskId);
@@ -60,7 +99,24 @@ export class RemoteGame implements Playable {
         });
         this.localGame.makeYourGuess(player);
       }
-    };
+    }
+  }
+
+  private syncPlayer(playerName: string) {
+    playerName && this.localGame.addPlayer(playerName);
+  }
+
+  private syncWordAndCard(
+    playerName: string,
+    data: { cardId?: string; word?: string }
+  ) {
+    if (data.word && data.cardId) {
+      const player = this.getPlayer(playerName);
+      if (player && !player.word) {
+        player.card = CardPool.getInstance().getTask(data.cardId);
+        player && this.localGame.playWord(player, new Word(data.word));
+      }
+    }
   }
 
   private getPlayer(name: string) {
@@ -72,7 +128,7 @@ export class RemoteGame implements Playable {
     this.firestore.joinGame(name);
   }
 
-  createGame({
+  async createGame({
     name,
     winningPoints,
     owner,
@@ -84,9 +140,14 @@ export class RemoteGame implements Playable {
     this.name = name;
     // todo rounds
     this.localGame.winningScore = winningPoints || 15;
-    this.firestore.newGame(name);
+    await this.firestore.newGame(name, owner);
     this.addPlayer(owner);
     this.activePlayer.isOwner = true;
+
+    const params = new URLSearchParams(window.location.search);
+    params.append("join", name);
+    params.append("player", owner);
+    window.location.search = params.toString();
   }
 
   nextRound() {
@@ -94,7 +155,7 @@ export class RemoteGame implements Playable {
     this.firestore.resetRound({
       additionalCardId: this.activePlayer.isOwner
         ? this.localGame.robot.card?.id
-        : undefined,
+        : "",
       score: this.activePlayer.totalScore,
     });
   }
@@ -112,12 +173,22 @@ export class RemoteGame implements Playable {
     });
   }
 
-  addPlayer(name: string) {
-    this.firestore.addPlayer(name);
+  setActivePlayer(name: string) {
+    this.firestore.setLocalPlayer(name);
     this.localGame.addPlayer(name);
     this.activePlayer = this.players.find((it) => it.name === name)!;
     this.localGame.activePlayer = this.activePlayer;
-    // TODO: sync with localstorage to enable browser refresh
+  }
+
+  async addPlayer(name: string) {
+    await this.firestore.addPlayer(name);
+    this.setActivePlayer(name);
+
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has("player")) {
+      params.append("player", name);
+      window.location.search = params.toString();
+    }
   }
 
   playWord(player: Player, word: Word) {

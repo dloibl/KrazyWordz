@@ -40,10 +40,12 @@ export class RemoteGame implements Playable {
     additionalCardId,
     started,
     owner,
+    playerCount,
   }: {
     additionalCardId: string;
     started: boolean;
     owner: string;
+    playerCount: number;
   }) {
     if (
       started &&
@@ -61,6 +63,9 @@ export class RemoteGame implements Playable {
     }
     if (owner && this.activePlayer?.name === owner) {
       this.activePlayer.isOwner = true;
+    }
+    if (playerCount && this.localGame.playerCount < 0) {
+      this.localGame.playerCount = playerCount;
     }
   }
 
@@ -120,7 +125,10 @@ export class RemoteGame implements Playable {
   }
 
   private getPlayer(name: string) {
-    return this.players.find((it) => it.name === name);
+    return (
+      this.players.find((it) => it.name === name) ||
+      this.localGame.addPlayer(name)
+    );
   }
 
   joinGame(name: string) {
@@ -137,17 +145,20 @@ export class RemoteGame implements Playable {
     winningPoints?: number;
     owner: string;
   }) {
-    this.name = name;
     // todo rounds
-    this.localGame.winningScore = winningPoints || 15;
+    // TODO winningscore in firestore >this.localGame.winningScore = winningPoints || 15;
     await this.firestore.newGame(name, owner);
-    this.addPlayer(owner);
-    this.activePlayer.isOwner = true;
+    await this.firestore.addPlayer(owner);
 
+    return this.joinMyGame(name, owner);
+  }
+
+  private joinMyGame(name: string, owner: string) {
     const params = new URLSearchParams(window.location.search);
     params.append("join", name);
     params.append("player", owner);
     window.location.search = params.toString();
+    // page reload!
   }
 
   nextRound() {
@@ -170,6 +181,7 @@ export class RemoteGame implements Playable {
       additionalCardId: this.activePlayer.isOwner
         ? this.localGame.robot.card?.id
         : undefined,
+      playerCount: this.players.length,
     });
   }
 

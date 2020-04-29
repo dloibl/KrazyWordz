@@ -28,6 +28,9 @@ export class Game implements Playable {
 
   activePlayer: Player = null!;
 
+  @observable
+  playerCount = -1;
+
   constructor() {
     (window as any).Game = this;
   }
@@ -118,6 +121,7 @@ export class Game implements Playable {
   @computed
   get isGuessTime() {
     return (
+      this.allPlayersLoaded() &&
       this.players.every((player) => player.word != null) &&
       !this.haveAllPlayersGuessed
     );
@@ -125,7 +129,14 @@ export class Game implements Playable {
 
   @computed
   get haveAllPlayersGuessed() {
-    return this.players.every((player) => player.guessConfirmed === true);
+    return (
+      this.allPlayersLoaded() &&
+      this.players.every((player) => player.guessConfirmed === true)
+    );
+  }
+
+  private allPlayersLoaded() {
+    return this.playerCount === this.players.length;
   }
 
   deletePlayer(name: string) {
@@ -140,7 +151,11 @@ export class Game implements Playable {
       console.warn(`Player with ${name} already exists`);
       return;
     }
-    this.players.push(new Player(name, this.computeColor(this.players.length)));
+    const player = new Player(name, this.computeColor(this.players.length));
+
+    this.players.push(player);
+
+    return player;
   };
 
   private computeColor(index: number) {

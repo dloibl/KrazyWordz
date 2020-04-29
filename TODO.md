@@ -1,6 +1,14 @@
-- finish game when we run out of cards
-- mix task cards and words for guessing
-- no ordering of open and guessed cards
-- nice layout (colors, ...)
-- remote game fertig stellen
-- offline game: Zwischenbutton einfügen zwischen den Aktionen "Spielerwechsel XY"
+- karte syncen und letters
+- eingabe sperren, wenn wort gespielt wurde
+- eingabe sperren, wenn guess confirmed
+- letter farbe besser
+- winning score syncen
+- Zweite Runde ist buggy
+
+Optional:
+
+- spieler löschen umsetzen
+- farbe der spieler syncen
+- guess syncen jederzeit
+- Guess, Task, etc. ändern, sodass Ids und nicht Instanzen verwendet werden
+- change Maps zu Objects

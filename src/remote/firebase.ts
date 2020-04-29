@@ -30,6 +30,7 @@ interface EventHandler {
     started: boolean;
     additionalCardId: string;
     owner: string;
+    playerCount: number;
   }) => void;
 }
 
@@ -97,8 +98,11 @@ export class Firestore {
     return this.getGame().collection("players").doc(name).set({ name });
   }
 
-  startGame({ additionalCardId = undefined as string | undefined }) {
-    this.getGame().set({ started: true, additionalCardId });
+  startGame({
+    additionalCardId = undefined as string | undefined,
+    playerCount = 0,
+  }) {
+    this.getGame().set({ started: true, additionalCardId, playerCount });
   }
 
   setWord(player: string, word: string, cardId: string) {

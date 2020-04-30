@@ -2,7 +2,7 @@
 - eingabe sperren, wenn wort gespielt wurde
 - eingabe sperren, wenn guess confirmed
 - letter farbe besser
-- Zweite Runde ist buggy
+- additional card geht manchmal verloren
 
 Optional:
 

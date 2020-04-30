@@ -39,13 +39,17 @@ export const FinishRoundView = observer(function ({
           </div>
         ))}
       </div>
-      <button
-        onClick={() => {
-          game.nextRound();
-        }}
-      >
-        Next Round
-      </button>
+      {game.activePlayer.readyForNextRound ? (
+        "Waiting for other players"
+      ) : (
+        <button
+          onClick={() => {
+            game.nextRound();
+          }}
+        >
+          Next Round
+        </button>
+      )}
     </div>
   );
 });

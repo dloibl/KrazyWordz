@@ -8,6 +8,7 @@ import { CardPool } from "./CardPool";
 
 export class RemoteGame implements Playable {
   localGame: Game = new Game();
+
   @observable
   name?: string;
   get isStarted() {
@@ -32,9 +33,14 @@ export class RemoteGame implements Playable {
         this.syncWordAndCard(playerName, data);
         this.syncGuess(playerName, data);
         this.syncScore(playerName, data);
+        this.syncNextRound(playerName, data);
       },
     })
   ) {}
+
+  get areAllPlayersReadyForNextRound() {
+    return this.localGame.areAllPlayersReadyForNextRound;
+  }
 
   private syncGameState({
     additionalCardId,
@@ -94,8 +100,9 @@ export class RemoteGame implements Playable {
       guess?: string;
     }
   ) {
+    const player = this.getPlayer(playerName)!;
+
     if (data.guess) {
-      const player = this.getPlayer(playerName);
       const guess: {
         [key: string]: string;
       } = JSON.parse(data.guess);
@@ -120,12 +127,20 @@ export class RemoteGame implements Playable {
     playerName: string,
     data: { cardId?: string; word?: string }
   ) {
+    const player = this.getPlayer(playerName)!;
     if (data.word && data.cardId) {
-      const player = this.getPlayer(playerName);
-      if (player && !player.word) {
-        player.card = CardPool.getInstance().getTask(data.cardId);
-        player && this.localGame.playWord(player, new Word(data.word));
-      }
+      player.card = CardPool.getInstance().getTask(data.cardId);
+      this.localGame.playWord(player, new Word(data.word));
+    }
+  }
+
+  private syncNextRound(
+    playerName: string,
+    data: { totalScore?: number; cardId?: string }
+  ) {
+    const player = this.getPlayer(playerName)!;
+    if (data.totalScore != null && data.cardId == null) {
+      player.readyForNextRound = true;
     }
   }
 
@@ -165,7 +180,6 @@ export class RemoteGame implements Playable {
   }
 
   nextRound() {
-    this.localGame.nextRound();
     this.firestore.resetRound({
       additionalCardId: this.activePlayer.isOwner
         ? this.localGame.robot.card?.id

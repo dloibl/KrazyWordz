@@ -4,6 +4,7 @@ import { Word } from "./Word";
 export interface Playable {
   isStarted: boolean;
   haveAllPlayersGuessed: boolean;
+  areAllPlayersReadyForNextRound: boolean;
   isGuessTime: boolean;
   players: Player[];
   activePlayer: Player;

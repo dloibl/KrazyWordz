@@ -1,5 +1,5 @@
 import { Player } from "./Player";
-import { observable, computed, action } from "mobx";
+import { observable, computed, action, reaction } from "mobx";
 import { Word } from "./Word";
 import { Guess } from "./Guess";
 import { Task } from "./Task";
@@ -33,6 +33,15 @@ export class Game implements Playable {
 
   constructor() {
     (window as any).Game = this;
+
+    reaction(
+      () => this.areAllPlayersReadyForNextRound,
+      (value) => {
+        if (value) {
+          this.nextRound();
+        }
+      }
+    );
   }
 
   start() {
@@ -90,6 +99,14 @@ export class Game implements Playable {
     return player.totalScore >= this.winningScore;
   }
 
+  @computed
+  get areAllPlayersReadyForNextRound() {
+    return (
+      this.allPlayersLoaded() &&
+      this.players.every((it) => it.readyForNextRound)
+    );
+  }
+
   nextRound() {
     this.roundCounter++;
     if (this.roundCounter > 0) {
@@ -108,8 +125,8 @@ export class Game implements Playable {
     player.resetLetters();
     player.resetWord();
     player.resetTask();
-    player.resetGuessConfirmation();
     player.resetRoundScore();
+    player.readyForNextRound = false;
     this.robot.resetTask();
   }
 

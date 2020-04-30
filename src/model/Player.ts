@@ -25,6 +25,8 @@ export class Player {
   correctGuesses = 0;
   @observable
   isOwner?: boolean = false;
+  @observable
+  readyForNextRound = true;
 
   constructor(public name: string, public color: string = "blue") {}
 
@@ -38,6 +40,7 @@ export class Player {
 
   playWord(word: Word) {
     this.word = word;
+    this.readyForNextRound = false;
   }
 
   @action
@@ -47,10 +50,6 @@ export class Player {
 
   confirmGuess() {
     this.guessConfirmed = true;
-  }
-
-  resetGuessConfirmation() {
-    this.guessConfirmed = false;
   }
 
   addScorePoint() {
@@ -72,6 +71,7 @@ export class Player {
 
   resetGuess() {
     this.guess.clear();
+    this.guessConfirmed = false;
   }
 
   resetTotalScore() {

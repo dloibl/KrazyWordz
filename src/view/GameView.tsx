@@ -39,7 +39,10 @@ export class GameView extends React.Component {
       return <JoinGameView game={game} />;
     } else if (game.isGuessTime) {
       return <MakeGuessView game={game} />;
-    } else if (game.haveAllPlayersGuessed) {
+    } else if (
+      game.haveAllPlayersGuessed &&
+      !game.areAllPlayersReadyForNextRound
+    ) {
       return <FinishRoundView game={game} />;
     } else {
       return <PlayWordView game={game} />;

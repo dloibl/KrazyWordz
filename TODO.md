@@ -2,7 +2,6 @@
 - eingabe sperren, wenn wort gespielt wurde
 - eingabe sperren, wenn guess confirmed
 - letter farbe besser
-- winning score syncen
 - Zweite Runde ist buggy
 
 Optional:

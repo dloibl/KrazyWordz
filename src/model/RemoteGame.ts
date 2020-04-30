@@ -41,11 +41,13 @@ export class RemoteGame implements Playable {
     started,
     owner,
     playerCount,
+    winningScore,
   }: {
     additionalCardId: string;
     started: boolean;
     owner: string;
     playerCount: number;
+    winningScore: number;
   }) {
     if (
       started &&
@@ -55,6 +57,9 @@ export class RemoteGame implements Playable {
     ) {
       console.log("Starting game");
       this.localGame.start();
+    }
+    if (winningScore) {
+      this.localGame.winningScore = winningScore;
     }
     if (additionalCardId != null && !this.localGame.robot.card) {
       this.localGame.robot.card = CardPool.getInstance().getTask(
@@ -138,16 +143,14 @@ export class RemoteGame implements Playable {
 
   async createGame({
     name,
-    winningPoints,
+    winningScore = 15,
     owner,
   }: {
     name: string;
-    winningPoints?: number;
+    winningScore?: number;
     owner: string;
   }) {
-    // todo rounds
-    // TODO winningscore in firestore >this.localGame.winningScore = winningPoints || 15;
-    await this.firestore.newGame(name, owner);
+    await this.firestore.newGame({ name, owner, winningScore });
     await this.firestore.addPlayer(owner);
 
     return this.joinMyGame(name, owner);

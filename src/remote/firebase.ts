@@ -31,6 +31,7 @@ interface EventHandler {
     additionalCardId: string;
     owner: string;
     playerCount: number;
+    winningScore: number;
   }) => void;
 }
 
@@ -73,9 +74,17 @@ export class Firestore {
     this.subscribe();
   }
 
-  async newGame(name: string, owner: string) {
+  async newGame({
+    name,
+    owner,
+    winningScore = 15,
+  }: {
+    name: string;
+    owner: string;
+    winningScore: number;
+  }) {
     this.name = name;
-    await this.getGame().set({ started: false, owner });
+    await this.getGame().set({ started: false, owner, winningScore });
     await this.subscribe();
   }
 

@@ -9,7 +9,7 @@ export function CreateGameView({ game }: { game: RemoteGame }) {
       .substr(0, 10)
   );
   const [player, setPlayer] = useState("");
-  const [winningPoints, setWinningPoints] = useState(15);
+  const [winningScore, setWinningScore] = useState(15);
   return (
     <div style={{ display: "flex", flexDirection: "column", margin: "2rem" }}>
       <h2>Create a new CrazyWords Game</h2>
@@ -19,11 +19,11 @@ export function CreateGameView({ game }: { game: RemoteGame }) {
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
-      Winning Points
+      Winning Score
       <input
         type="number"
-        value={winningPoints}
-        onChange={(e) => setWinningPoints(Number(e.target.value))}
+        value={winningScore}
+        onChange={(e) => setWinningScore(Number(e.target.value))}
       />
       Your name
       <input
@@ -37,7 +37,7 @@ export function CreateGameView({ game }: { game: RemoteGame }) {
       </a>
       <button
         className="button"
-        onClick={() => game.createGame({ owner: player, name, winningPoints })}
+        onClick={() => game.createGame({ owner: player, name, winningScore })}
       >
         Create
       </button>

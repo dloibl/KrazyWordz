@@ -1,3 +1,6 @@
+$color-primary: rgb(133, 28, 133);
+@import "milligram/src/milligram.sass";
+
 html,
 body {
   height: 100%;
@@ -14,8 +17,8 @@ body {
 header {
   display: flex;
   flex: 0 0 auto;
-  height: 4rem;
-  background: rgb(70, 0, 70);
+  height: 6rem;
+  background: $color-primary;
   align-items: center;
   justify-content: center;
 }
@@ -46,6 +49,7 @@ footer {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
 }
 
 .spiral-background {
@@ -63,23 +67,31 @@ footer {
   border: 5px solid;
   padding: 1rem;
   border-radius: 2rem;
+  min-width: 20rem;
 }
 
 .letters {
-  margin: 1em;
+  margin: 1rem;
   display: flex;
+  flex-wrap: wrap;
   flex-direction: row;
   justify-content: space-between;
-  width: 25em;
+  min-width: 40rem;
+  min-height: 35px;
 }
 
 .letter-tile {
+  font-size: 2rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: black;
   background-color: #ebe6b7;
-  border-radius: 0.5em;
-  padding: 0.5em;
-  width: 1em;
-  height: 1em;
+  border-radius: 1rem;
+  padding: 1rem;
+  min-width: 3.5rem;
+  height: 3.5rem;
   text-align: center;
   border: 1px solid black;
   box-shadow: 1px 1px 0px #bfbb93, 2px 2px 0px #bfbb93, 3px 3px 0px #bfbb93,
@@ -91,12 +103,12 @@ footer {
 
 .tableau {
   @extend .spiral-background;
-  padding: 0.5em;
+  padding: 0.5rem;
   margin: 1em;
   border: 5px solid;
-  border-radius: 1em;
-  width: 18em;
-  height: 2.5em;
+  border-radius: 2rem;
+  width: 34rem;
+  height: 6rem;
   display: flex;
   flex-direction: row;
 }
@@ -104,11 +116,12 @@ footer {
 .task-card {
   @extend .spiral-background;
   position: relative;
-  margin: 1em;
-  padding: 1em;
-  width: 12em;
-  height: 4em;
-  border-radius: 1em;
+  margin: 1rem;
+  padding: 1rem;
+  width: 24rem;
+  height: 8rem;
+  border-radius: 2rem;
+
   border: 5px solid grey;
   text-align: center;
   display: flex;
@@ -136,4 +149,11 @@ footer {
 }
 .dropping {
   filter: 80%;
+}
+
+// utils
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

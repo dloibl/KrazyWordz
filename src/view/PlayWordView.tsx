@@ -12,21 +12,21 @@ export const PlayWordView = observer(function ({ game }: { game: Playable }) {
     return <div>"Drawing a card and letters..."</div>;
   }
   return (
-    <div>
-      <h3>It's your turn {player.name}</h3>
-      Your task is:
+    <div className="page">
+      <h4>Time to be creative! Invent a word for</h4>
       <TaskCard task={player.card!} disabled={true} />
-      Your available letters:
+      <h4>Your letters are</h4>
       <LetterPool letters={player.letters} />
-      <div style={{ display: "flex" }}>
+      <div style={{ display: "flex", flexDirection: "column" }}>
         <Tableau color={player.color} letters={player.letters} />
+
         {player.word ? (
-          "Waiting for other players..."
+          <em style={{ margin: "1em" }}>Waiting for other players...</em>
         ) : (
           <button
             className="button"
-            disabled={player.letters.length === 0}
             style={{ margin: "1em" }}
+            disabled={player.letters.length === 0}
             onClick={() => {
               game.playWord(player, createWord(player.letters));
             }}

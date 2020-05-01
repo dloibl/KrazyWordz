@@ -4,7 +4,6 @@ import { GameView } from "./view/GameView";
 import { DndProvider } from "react-dnd";
 import Backend from "react-dnd-html5-backend";
 
-import "milligram/dist/milligram.css";
 import "./styles/index.scss";
 
 ReactDOM.render(

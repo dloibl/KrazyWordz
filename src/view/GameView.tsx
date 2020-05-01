@@ -11,11 +11,14 @@ import { JoinGameView } from "./JoinGameView";
 @observer
 export class GameView extends React.Component {
   @observable
-  private game = new Game().init(this.params());
+  private game?: Game;
 
-  private params() {
+  componentDidMount() {
     const params = new URLSearchParams(window.location.search);
-    return { join: params.get("join"), player: params.get("player") };
+    this.game = new Game().init({
+      join: params.get("join"),
+      player: params.get("player"),
+    });
   }
 
   render() {

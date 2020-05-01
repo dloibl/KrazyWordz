@@ -2,7 +2,6 @@ import React from "react";
 
 import { observer } from "mobx-react";
 import { Playable } from "../model/Playable";
-import { Game } from "../model/Game";
 
 export const JoinGameView = observer(function ({ game }: { game: Playable }) {
   const owner = game?.activePlayer?.isOwner;
@@ -46,13 +45,17 @@ const PlayerList = observer(function ({ game }: { game: Playable }) {
 
 function AddPlayer({ game }: { game: Playable }) {
   const [name, setName] = React.useState("");
-  if (game instanceof Game && game.activePlayer) {
+  if (game.activePlayer) {
     return null;
   }
   return (
     <div>
-      {game instanceof Game ? "Join" : "Add Player"}
-      <input value={name} onChange={(e) => setName(e.target.value)}></input>
+      <label htmlFor="playerName">Join as</label>
+      <input
+        id="playerName"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      ></input>
       <button
         className="button button-clear"
         onClick={() => {

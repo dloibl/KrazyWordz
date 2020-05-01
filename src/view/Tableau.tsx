@@ -66,6 +66,7 @@ export const Tableau = observer(function ({
         <input
           autoFocus={true}
           tabIndex={1}
+          type="text"
           value=""
           style={{ width: "100%" }}
           onChange={() => null}

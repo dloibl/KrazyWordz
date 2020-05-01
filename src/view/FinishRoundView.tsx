@@ -10,7 +10,7 @@ export const FinishRoundView = observer(function ({
   game: Playable;
 }) {
   return (
-    <div>
+    <div className="plage">
       <div>
         <h3>Solution</h3>
         {game.players.map((player) => (

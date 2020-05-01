@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { RemoteGame } from "../model/RemoteGame";
+import { Game } from "../model/Game";
 
-export function CreateGameView({ game }: { game: RemoteGame }) {
+export function CreateGameView({ game }: { game: Game }) {
   const [name, setName] = useState(
     Math.random()
       .toString(36)

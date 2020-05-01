@@ -34,9 +34,9 @@ const PlayerList = observer(function ({ game }: { game: Playable }) {
     <>
       <label htmlFor="players">Players</label>
       <ul id="players" className="players">
-        {game.players.map(({ name, color }) => (
+        {game.players.map(({ name, color, isOwner }) => (
           <li className="player" style={{ borderColor: color }} key={name}>
-            {name} {game?.activePlayer?.isOwner && "(Owner)"}
+            {name} {isOwner && "(Owner)"}
           </li>
         ))}
       </ul>

@@ -8,6 +8,7 @@ import { observable } from "mobx";
 import { Playable } from "../model/Playable";
 import { RemoteGame } from "../model/RemoteGame";
 import { CreateGameView } from "./CreateGameView";
+import { JoinGameView } from "./JoinGameView";
 
 @observer
 export class GameView extends React.Component {
@@ -48,52 +49,4 @@ export class GameView extends React.Component {
       return <PlayWordView game={game} />;
     }
   }
-}
-
-const JoinGameView = observer(function ({ game }: { game: Playable }) {
-  const owner = game?.activePlayer?.isOwner;
-  return (
-    <div>
-      {owner ? "New game" : "Join game"}
-      <PlayerList game={game} />
-      {!owner && <AddPlayer game={game} />}
-      {owner && <button onClick={() => game.start()}>Start Game</button>}
-    </div>
-  );
-});
-
-const PlayerList = observer(function ({ game }: { game: Playable }) {
-  return (
-    <ul>
-      {game.players.map(({ name, color }) => (
-        <li style={{ color }} key={name}>
-          {name}{" "}
-          {game?.activePlayer?.isOwner && (
-            <button onClick={() => game.deletePlayer(name)}>-</button>
-          )}
-        </li>
-      ))}
-    </ul>
-  );
-});
-
-function AddPlayer({ game }: { game: Playable }) {
-  const [name, setName] = React.useState("");
-  if (game instanceof RemoteGame && game.activePlayer) {
-    return null;
-  }
-  return (
-    <div>
-      {game instanceof RemoteGame ? "Join" : "Add Player"}
-      <input value={name} onChange={(e) => setName(e.target.value)}></input>
-      <button
-        onClick={() => {
-          game.addPlayer(name);
-          setName("");
-        }}
-      >
-        +
-      </button>
-    </div>
-  );
 }

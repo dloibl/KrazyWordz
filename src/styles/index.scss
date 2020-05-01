@@ -26,10 +26,8 @@ header {
 
 .content {
   flex: 1 1 auto;
-  background: rgb(96, 2, 96);
   position: relative; /* need this to position inner content */
   overflow-y: auto;
-  color: rgba(255, 255, 255, 0.8);
 }
 
 footer {
@@ -41,6 +39,30 @@ footer {
   align-items: center;
   justify-content: flex-end;
   padding: 0 1rem;
+}
+
+.page {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.spiral-background {
+  background: radial-gradient(
+    circle at center,
+    white,
+    rgb(220, 220, 220),
+    white 100%
+  );
+}
+
+.player {
+  @extend .spiral-background;
+  list-style: none; /* Remove default bullets */
+  border: 5px solid;
+  padding: 1rem;
+  border-radius: 2rem;
 }
 
 .letters {
@@ -68,10 +90,10 @@ footer {
 }
 
 .tableau {
+  @extend .spiral-background;
   padding: 0.5em;
   margin: 1em;
   border: 5px solid;
-  background: white;
   border-radius: 1em;
   width: 18em;
   height: 2.5em;
@@ -80,6 +102,7 @@ footer {
 }
 
 .task-card {
+  @extend .spiral-background;
   position: relative;
   margin: 1em;
   padding: 1em;

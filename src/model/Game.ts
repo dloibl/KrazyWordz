@@ -176,7 +176,15 @@ export class Game implements Playable {
   };
 
   private computeColor(index: number) {
-    const colors = ["red", "blue", "green", "teal", "pink", "purple", "orange"];
+    const colors = [
+      "#326f0f",
+      "#bb510a",
+      "#1bbed0",
+      "#853f02",
+      "#aa7d47",
+      "#433d46",
+      "#00806d",
+    ];
 
     return colors[index];
   }

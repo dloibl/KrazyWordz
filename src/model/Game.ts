@@ -2,7 +2,7 @@ import { Firestore } from "../remote/firebase";
 import { Player } from "./Player";
 import { Word, Task } from ".";
 import { Playable } from "./Playable";
-import { observable } from "mobx";
+import { observable, IReactionDisposer } from "mobx";
 import { CardPool } from "./CardPool";
 import { computed, reaction } from "mobx";
 import { RobotPlayer } from "./RobotPlayer";
@@ -38,6 +38,8 @@ export class Game implements Playable {
 
   private letterPool?: LetterPool;
 
+  private readyReactionDisposer: IReactionDisposer;
+
   constructor(
     private firestore = new Firestore({
       onGameEvent: (game) => this.syncGameState(game),
@@ -52,7 +54,7 @@ export class Game implements Playable {
   ) {
     (window as any).Game = this;
 
-    reaction(
+    this.readyReactionDisposer = reaction(
       () => this.areAllPlayersReadyForNextRound,
       (value) => {
         if (value) {
@@ -70,6 +72,10 @@ export class Game implements Playable {
       this.setActivePlayer(player);
     }
     return this;
+  }
+
+  dispose() {
+    this.readyReactionDisposer();
   }
 
   private syncGameState({

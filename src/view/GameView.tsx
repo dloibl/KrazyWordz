@@ -21,6 +21,10 @@ export class GameView extends React.Component {
     });
   }
 
+  componentWillUnmount() {
+    this.game?.dispose();
+  }
+
   render() {
     const game = this.game;
     if (!game) {

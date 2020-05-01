@@ -8,7 +8,6 @@ import { computed, reaction } from "mobx";
 import { RobotPlayer } from "./RobotPlayer";
 import { LetterPool } from "./LetterPool";
 import { Guess } from "./Guess";
-import { IReactComponent } from "mobx-react/dist/types/IReactComponent";
 
 export class Game implements Playable {
   @observable

@@ -1,6 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { Playable } from "../model/Playable";
+import { Playable, PlayerState } from "../model/Playable";
 import { MatchedCard } from "./MatchedCard";
 import { Player } from "../model";
 
@@ -39,12 +39,12 @@ export const FinishRoundView = observer(function ({
           </div>
         ))}
       </div>
-      {game.activePlayer.readyForNextRound ? (
+      {game.activePlayer.state === PlayerState.NEXT_ROUND ? (
         "Waiting for other players"
       ) : (
         <button
           onClick={() => {
-            game.nextRound();
+            game.nextRound(game.activePlayer);
           }}
         >
           Next Round

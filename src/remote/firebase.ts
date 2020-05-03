@@ -1,5 +1,7 @@
 import firebase from "firebase/app";
 import "firebase/firestore";
+import { Player } from "../model";
+import { GameEventHandler } from "../model/Playable";
 
 var firebaseConfig = {
   apiKey: new URLSearchParams(window.location.search).get("apiKey"),
@@ -15,34 +17,16 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 // firebase.analytics();
 
-interface EventHandler {
-  onPlayerEvent(
-    playerName: string,
-    data: {
-      name: string;
-      word?: string;
-      cardId?: string;
-      guess?: string;
-      totalScore?: number;
-    }
-  ): void;
-  onGameEvent: (gameData: {
-    started: boolean;
-    additionalCardId: string;
-    owner: string;
-    playerCount: number;
-    winningScore: number;
-  }) => void;
-}
-
 export class Firestore {
   private name?: string;
   private localPlayer?: string;
 
   constructor(
-    private handler: EventHandler,
+    private handler: GameEventHandler,
     private db = firebase.firestore()
-  ) {}
+  ) {
+    console.log("creating firestore");
+  }
 
   private getGame() {
     return this.db.collection("games").doc(this.name);
@@ -60,12 +44,25 @@ export class Firestore {
       .onSnapshot((querySnapshot) => {
         querySnapshot.forEach((doc) => {
           const player = doc.id;
-          //if (player !== this.localPlayer) {
           const data: any = doc.data();
           console.log("received player event", player, data);
           this.handler.onPlayerEvent(player, data);
-          //}
         });
+      });
+  }
+
+  updatePlayer(player: Player) {
+    console.log("fire player event", player);
+    this.getGame()
+      .collection("players")
+      .doc(this.localPlayer)
+      .update({
+        state: player.state,
+        word: player.word?.word || null,
+        cardId: player.card?.id,
+        letters: player.letters.map((it) => it.value),
+        guess: player.guessConfirmed ? player.stringifyGuess() : null,
+        totalScore: player.totalScore,
       });
   }
 
@@ -88,16 +85,6 @@ export class Firestore {
     await this.subscribe();
   }
 
-  resetRound({ additionalCardId = "" as string, score = 0 }) {
-    this.getGame()
-      .collection("players")
-      .doc(this.localPlayer)
-      .set({ totalScore: score });
-    if (additionalCardId) {
-      this.getGame().update({ additionalCardId });
-    }
-  }
-
   setLocalPlayer(name: string) {
     this.localPlayer = name;
   }
@@ -107,22 +94,7 @@ export class Firestore {
     return this.getGame().collection("players").doc(name).set({ name });
   }
 
-  startGame({ additionalCardId = "" as string | undefined, playerCount = 0 }) {
-    this.getGame().set({ started: true, additionalCardId, playerCount });
-  }
-
-  setWord(player: string, word: string, cardId: string) {
-    this.getGame()
-      .collection("players")
-      .doc(player)
-      .update({ word, cardId, guess: null });
-  }
-
-  //guess number: cardId, guess string: player name
-  storeGuess(player: string, guess: { [key: string]: string }) {
-    this.getGame()
-      .collection("players")
-      .doc(player)
-      .update({ guess: JSON.stringify(guess) });
+  startGame({ additionalCardId = null as string | null, playerCount = 0 }) {
+    this.getGame().update({ started: true, additionalCardId, playerCount });
   }
 }

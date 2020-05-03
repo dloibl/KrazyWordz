@@ -1,12 +1,11 @@
-- karte syncen und letters
+- karte syncen und letters (1/2)
 - eingabe sperren, wenn wort gespielt wurde
 - eingabe sperren, wenn guess confirmed
-- additional card geht manchmal verloren
+- additional card neu ziehen
 - winning score implementieren
 
 Optional:
 
-- spieler löschen umsetzen
 - farbe der spieler syncen
 - guess syncen jederzeit
 - Guess, Task, etc. ändern, sodass Ids und nicht Instanzen verwendet werden

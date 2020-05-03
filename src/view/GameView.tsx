@@ -4,7 +4,7 @@ import { PlayWordView } from "./PlayWordView";
 import { MakeGuessView } from "./MakeGuessView";
 import { FinishRoundView } from "./FinishRoundView";
 import { observable } from "mobx";
-import { Game } from "../model/Game";
+import { Game, GameState } from "../model";
 import { CreateGameView } from "./CreateGameView";
 import { JoinGameView } from "./JoinGameView";
 
@@ -28,22 +28,23 @@ export class GameView extends React.Component {
   render() {
     const game = this.game;
     if (!game) {
-      return "Loading...";
+      return "Mounting...";
     }
-    if (!game.isStarted) {
-      if (!game.name) {
+    switch (game.state) {
+      case GameState.LOADING:
+        return "Loading...";
+      case GameState.CREATE:
         return <CreateGameView game={game} />;
-      }
-      return <JoinGameView game={game} />;
-    } else if (game.isGuessTime) {
-      return <MakeGuessView game={game} />;
-    } else if (
-      game.haveAllPlayersGuessed &&
-      !game.areAllPlayersReadyForNextRound
-    ) {
-      return <FinishRoundView game={game} />;
-    } else {
-      return <PlayWordView game={game} />;
+      case GameState.JOIN:
+        return <JoinGameView game={game} />;
+      case GameState.PLAY_WORD:
+        return <PlayWordView game={game} />;
+      case GameState.MAKE_GUESS:
+        return <MakeGuessView game={game} />;
+      case GameState.SHOW_SCORE:
+        return <FinishRoundView game={game} />;
+      default:
+        return "Loading...";
     }
   }
 }

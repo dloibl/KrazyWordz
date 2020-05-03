@@ -13,10 +13,13 @@ export function MatchedCard({
   color: string;
 }) {
   return (
-    <div className="task-card match" style={{
-      borderColor: color,
-    }}>
-      {card.task} = {word.word}
+    <div
+      className="task-card match"
+      style={{
+        borderColor: color,
+      }}
+    >
+      {card?.task} = {word?.word}
       {onDelete && <button onClick={() => onDelete(card)}>X</button>}
     </div>
   );

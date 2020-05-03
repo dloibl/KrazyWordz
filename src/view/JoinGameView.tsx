@@ -4,13 +4,14 @@ import { observer } from "mobx-react";
 import { Playable } from "../model/Playable";
 
 export const JoinGameView = observer(function ({ game }: { game: Playable }) {
-  const owner = game?.activePlayer?.isOwner;
   return (
     <div className="page join-game">
       <PlayerList game={game} />
       {!game.activePlayer && <AddPlayer game={game} />}
       <JoinLink />
-      {owner && <button onClick={() => game.start()}>Start Game</button>}
+      {game?.isOwner(game.activePlayer) && (
+        <button onClick={() => game.start()}>Start Game</button>
+      )}
     </div>
   );
 });
@@ -33,9 +34,9 @@ const PlayerList = observer(function ({ game }: { game: Playable }) {
     <>
       <label htmlFor="players">Players</label>
       <ul id="players" className="players">
-        {game.players.map(({ name, color, isOwner }) => (
+        {game.players.map(({ name, color }) => (
           <li className="player" style={{ borderColor: color }} key={name}>
-            {name} {isOwner && "(Owner)"}
+            {name} {game.isOwner({ name }) && "(Owner)"}
           </li>
         ))}
       </ul>

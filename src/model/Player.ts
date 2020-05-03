@@ -1,10 +1,11 @@
 import { Task } from "./Task";
 import { Word } from "./Word";
 import { Letter } from "./Letter";
-import { observable, action } from "mobx";
+import { observable } from "mobx";
 import { Guess } from "./Guess";
 import { CardPool } from "./CardPool";
 import { LetterPool } from "./LetterPool";
+import { PlayerState } from "./Playable";
 
 export class Player {
   @observable
@@ -24,32 +25,46 @@ export class Player {
   @observable
   correctGuesses = 0;
   @observable
-  isOwner?: boolean = false;
+  waitingForNextRound = false;
   @observable
-  readyForNextRound = true;
+  state = PlayerState.INIT;
 
   constructor(public name: string, public color: string = "blue") {}
 
-  drawCard(cardPool: CardPool) {
-    this.card = cardPool.draw();
+  stringifyGuess() {
+    const guess: { [key: string]: string } = {};
+    this.guess.forEach((player, task) => (guess[task.id] = player.name));
+    return JSON.stringify(guess);
   }
 
-  drawLetters(letterPool: LetterPool) {
-    this.letters = letterPool.drawLetters();
+  drawCard(cardPool: CardPool, cardId?: string) {
+    this.card = cardPool.draw(cardId);
+    this.state = PlayerState.PLAY;
+  }
+
+  drawLetters(letterPool: LetterPool, letters?: string[]) {
+    this.letters = letters
+      ? letters.map((it) => new Letter(it))
+      : letterPool.drawLetters();
   }
 
   playWord(word: Word) {
     this.word = word;
-    this.readyForNextRound = false;
+    this.state = PlayerState.GUESS;
   }
 
-  @action
+  setReadyForNextRound() {
+    this.waitingForNextRound = true;
+    this.state = PlayerState.NEXT_ROUND;
+  }
+
   addGuess(card: Task, player: Player) {
     this.guess.set(card, player);
   }
 
   confirmGuess() {
     this.guessConfirmed = true;
+    this.state = PlayerState.SHOW_SCORE;
   }
 
   addScorePoint() {
@@ -57,32 +72,15 @@ export class Player {
     this.totalScore++;
   }
 
-  resetTask() {
+  reset() {
     this.card = undefined;
-  }
-
-  resetLetters() {
     this.letters = [];
-  }
-
-  resetWord() {
     this.word = undefined;
-  }
-
-  resetGuess() {
     this.guess.clear();
     this.guessConfirmed = false;
-  }
-
-  resetTotalScore() {
-    this.totalScore = 0;
-  }
-
-  resetRoundScore() {
     this.roundScore = 0;
-  }
-
-  resetCorrectGuesses() {
+    this.waitingForNextRound = false;
     this.correctGuesses = 0;
+    this.state = PlayerState.INIT;
   }
 }

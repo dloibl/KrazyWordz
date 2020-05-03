@@ -219,14 +219,17 @@ export class Game implements Playable {
 
     this.letterPool = new LetterPool();
     this.drawCardAndLetters(this.activePlayer);
+    if (this.isOwner(this.activePlayer)) {
+      this.firestore.updateGame({
+        additionalCardId: this.cardPool.draw().id,
+        roundCounter: this.roundCounter,
+        playerCount: this.players.length,
+      });
+    }
   }
 
   start() {
     this.startNextRound();
-    this.firestore.startGame({
-      additionalCardId: this.drawAdditionalCardId(),
-      playerCount: this.players.length,
-    });
   }
 
   setActivePlayer(name: string) {
@@ -242,12 +245,6 @@ export class Game implements Playable {
     window.location.search = params.toString();
     // page reload but for testing purpose!
     return this.init({ join: name, player: owner });
-  }
-
-  private drawAdditionalCardId() {
-    return this.isOwner(this.activePlayer)
-      ? this.cardPool.draw().id
-      : undefined;
   }
 
   /**

@@ -94,7 +94,17 @@ export class Firestore {
     return this.getGame().collection("players").doc(name).set({ name });
   }
 
-  startGame({ additionalCardId = null as string | null, playerCount = 0 }) {
-    this.getGame().update({ started: true, additionalCardId, playerCount });
+  updateGame({
+    started = true,
+    additionalCardId = null as string | null,
+    playerCount = 0,
+    roundCounter = 1,
+  }) {
+    this.getGame().update({
+      started,
+      additionalCardId,
+      playerCount,
+      roundCounter,
+    });
   }
 }

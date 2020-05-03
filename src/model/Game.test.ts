@@ -19,7 +19,7 @@ describe("Crazy Words Game", () => {
     updatePlayer: jest.fn(),
     newGame: jest.fn(() => Promise.resolve()),
     joinGame: jest.fn(),
-    startGame: jest.fn(),
+    updateGame: jest.fn(),
     fireGameEvent: (data: any) => {
       game.syncGameState(data);
     },
@@ -84,9 +84,10 @@ describe("Crazy Words Game", () => {
   it("owner can start the game", async () => {
     await game.addPlayer("A");
     await game.addPlayer("B");
+    game.owner = "B";
     game.playerCount = 2;
     game.start();
-    expect(firestore.startGame).toBeCalled();
+    expect(firestore.updateGame).toBeCalled();
     expect(game.state).toEqual(GameState.PLAY_WORD);
     expect(game.activePlayer.card).toBeDefined();
   });
@@ -161,6 +162,7 @@ describe("Crazy Words Game", () => {
 
   it("plays next round when all players are ready", () => {
     startGameWithTwoPlayers();
+    const oldAdditionalCardId = game.additionalCard?.id;
     expect(game.roundCounter).toEqual(1);
     playWords();
     makeGuesses();
@@ -168,7 +170,6 @@ describe("Crazy Words Game", () => {
     game.nextRound(game.activePlayer);
     expect(game.state).toEqual(GameState.SHOW_SCORE);
     expect(game.activePlayer.state).toEqual(PlayerState.NEXT_ROUND);
-
     firestore.firePlayerEvent({
       name: "A",
       state: PlayerState.NEXT_ROUND,
@@ -176,6 +177,11 @@ describe("Crazy Words Game", () => {
 
     expect(game.state).toEqual(GameState.PLAY_WORD);
     expect(game.roundCounter).toEqual(2);
+    firestore.fireGameEvent({
+      additionalCardId: "42",
+    });
+    expect(game.additionalCard).toBeDefined();
+    expect(oldAdditionalCardId).not.toEqual(game.additionalCard?.id);
   });
 
   const startGameWithTwoPlayers = () => {

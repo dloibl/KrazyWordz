@@ -10,35 +10,41 @@ export const FinishRoundView = observer(function ({
   game: Playable;
 }) {
   return (
-    <div className="plage">
-      <div>
-        <h3>Solution</h3>
-        {game.players.map((player) => (
-          <div key={player.name}>
-            <p style={{ color: player.color }}> {player.name} </p> played:
-            <MatchedCard
-              key={player.card!.id}
-              card={player.card!}
-              word={player.word!}
-              color={player.color}
-            />
-            This was guessed correctly by{" "}
-            {getCorrectGuesserAsString(game.players, player)}
-            <br />
-            <br />
-          </div>
-        ))}
-      </div>
-      <h3>See the new scores</h3>
-      <div>
-        {game.players.map((player) => (
-          <div key={player.name}>
-            <p style={{ color: player.color }}> {player.name} </p> earned{" "}
-            {player.roundScore} points in this round and therefore has now{" "}
-            {player.totalScore} points!{" "}
-          </div>
-        ))}
-      </div>
+    <div className="page">
+      <h3>Scores Round {game.roundCounter}</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Card and Word</th>
+            <th>Guessed correctly by</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {game.players
+            .slice()
+            .sort((a, b) => b.totalScore - a.totalScore)
+            .map((player, _, players) => (
+              <tr key={player.name}>
+                <td>{player.name}</td>
+                <td>
+                  {player.card && player.word && (
+                    <MatchedCard
+                      key={player.card?.id}
+                      card={player.card!}
+                      word={player.word!}
+                      color={player.color}
+                    />
+                  )}
+                </td>
+                <td>{getCorrectGuesserAsString(players, player)}</td>
+                <td>{player.totalScore}</td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
+
       {game.activePlayer.state === PlayerState.NEXT_ROUND ? (
         "Waiting for other players"
       ) : (

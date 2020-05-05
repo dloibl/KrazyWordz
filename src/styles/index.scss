@@ -76,7 +76,7 @@ footer {
   flex-wrap: wrap;
   flex-direction: row;
   justify-content: space-between;
-  min-width: 40rem;
+  min-width: 35rem;
   min-height: 35px;
 }
 
@@ -130,8 +130,8 @@ footer {
 }
 .task-card.match > button {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: -0.8rem;
+  right: -1.5rem;
 }
 
 .task-cards-panel {

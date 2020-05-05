@@ -7,38 +7,42 @@ import { Playable } from "../model/Playable";
 
 export const MakeGuessView = observer(function ({ game }: { game: Playable }) {
   const player = game.activePlayer;
+  const unmatchedWords = game.players
+    .filter((p) => p !== player)
+    .filter((p) => !Array.from(player.guess.values()).includes(p));
   return (
     <div className="page">
       <h4>What's what?</h4>
-      <div className="match-panel">
-        <div className="task-cards-panel">
-          {game.players
-            .filter((p) => p !== player)
-            .map((it) => it.card!)
-            .concat([game.additionalCard!])
-            .filter((card) => card && !player.guess.has(card))
-            .map((card) => (
-              <TaskCard key={card.id} task={card} disabled={false} />
-            ))}
-        </div>
-        <svg className="center">
-          <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"></path>
-        </svg>
-        <div>
-          {game.players
-            .filter((p) => p !== player)
-            .filter((p) => !Array.from(player.guess.values()).includes(p))
-            .map((p) => (
+      {unmatchedWords.length > 0 && (
+        <div className="match-panel">
+          <div className="task-cards-panel">
+            {game.players
+              .filter((p) => p !== player)
+              .map((it) => it.card!)
+              .concat([game.additionalCard!])
+              .filter((card) => card && !player.guess.has(card))
+              .map((card) => (
+                <TaskCard key={card.id} task={card} disabled={false} />
+              ))}
+          </div>
+          <div className="center" style={{ width: "8rem" }}>
+            <svg width="24px" height="24px" viewBox="0 0 24 24">
+              <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"></path>
+            </svg>
+          </div>
+          <div style={{ margin: "auto 0" }}>
+            {unmatchedWords.map((p) => (
               <Tableau
                 key={p.name}
                 disabled={true}
                 color={p.color}
-                letters={p.word!.getLetters()}
+                letters={p.word?.getLetters() || []}
                 onDropCard={(card) => player.addGuess(card, p)}
               ></Tableau>
             ))}
+          </div>
         </div>
-      </div>
+      )}
       {Array.from(player.guess.entries()).map(([card, p]) => (
         <MatchedCard
           key={card.id}

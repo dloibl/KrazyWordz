@@ -20,7 +20,11 @@ export function MatchedCard({
       }}
     >
       {card?.task} = {word?.word}
-      {onDelete && <button onClick={() => onDelete(card)}>X</button>}
+      {onDelete && (
+        <button className="button-clear" onClick={() => onDelete(card)}>
+          X
+        </button>
+      )}
     </div>
   );
 }

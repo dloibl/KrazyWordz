@@ -31,6 +31,7 @@ export interface PlayerEventData {
 
 export interface Playable {
   state?: GameState;
+  roundCounter?: number;
   players: Player[];
   activePlayer: Player;
   additionalCard?: Task;

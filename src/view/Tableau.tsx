@@ -60,7 +60,14 @@ export const Tableau = observer(function ({
       }}
     >
       {getSortedPlayedLetters(letters).map((letter, index) => (
-        <LetterTile key={index} letter={letter} disabled={disabled} />
+        <LetterTile
+          key={index}
+          letter={letter}
+          disabled={disabled}
+          onClick={() => {
+            letter.position = undefined;
+          }}
+        />
       ))}
       {!disabled && (
         <input

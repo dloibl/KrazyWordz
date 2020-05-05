@@ -4,25 +4,30 @@ import { Letter } from "../model";
 import { LetterTile } from "./LetterTile";
 import { ItemTypes } from "./ItemTypes";
 import { useDrop } from "react-dnd";
+import { getNextPosition } from "../model/Letter";
 
-export const LetterPool = observer(function({
-  letters = []
+export const LetterPool = observer(function ({
+  letters = [],
 }: {
   letters: Letter[];
 }) {
   const [, drop] = useDrop({
     accept: ItemTypes.LETTER,
-    drop: drop => {
+    drop: (drop) => {
       const letter = ((drop as any) as { letter: Letter }).letter;
       letter.position = undefined;
-    }
+    },
   });
   return (
     <div ref={drop} className="letters">
       {letters
-        .filter(letter => !letter.position)
+        .filter((letter) => !letter.position)
         .map((letter, index) => (
-          <LetterTile key={index} letter={letter} />
+          <LetterTile
+            key={index}
+            letter={letter}
+            onClick={() => (letter.position = getNextPosition(letters))}
+          />
         ))}
     </div>
   );

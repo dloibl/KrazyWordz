@@ -4,6 +4,7 @@ import { TaskCard } from "./TaskCard";
 import { Tableau } from "./Tableau";
 import { MatchedCard } from "./MatchedCard";
 import { Playable } from "../model/Playable";
+import { shuffle } from "../util/shuffle";
 
 export const MakeGuessView = observer(function ({ game }: { game: Playable }) {
   const player = game.activePlayer;
@@ -16,14 +17,15 @@ export const MakeGuessView = observer(function ({ game }: { game: Playable }) {
       {unmatchedWords.length > 0 && (
         <div className="match-panel">
           <div className="task-cards-panel">
-            {game.players
-              .filter((p) => p !== player)
-              .map((it) => it.card!)
-              .concat([game.additionalCard!])
-              .filter((card) => card && !player.guess.has(card))
-              .map((card) => (
-                <TaskCard key={card.id} task={card} disabled={false} />
-              ))}
+            {shuffle(
+              game.players
+                .filter((p) => p !== player)
+                .map((it) => it.card!)
+                .concat([game.additionalCard!])
+                .filter((card) => card && !player.guess.has(card))
+            ).map((card) => (
+              <TaskCard key={card.id} task={card} disabled={false} />
+            ))}
           </div>
           <div className="center" style={{ width: "8rem" }}>
             <svg width="24px" height="24px" viewBox="0 0 24 24">
@@ -31,7 +33,7 @@ export const MakeGuessView = observer(function ({ game }: { game: Playable }) {
             </svg>
           </div>
           <div style={{ margin: "auto 0" }}>
-            {unmatchedWords.map((p) => (
+            {shuffle(unmatchedWords).map((p) => (
               <Tableau
                 key={p.name}
                 disabled={true}

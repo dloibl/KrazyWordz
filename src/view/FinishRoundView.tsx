@@ -24,8 +24,12 @@ export const FinishRoundView = observer(function ({
         <tbody>
           {game.players
             .slice()
-            .sort((a, b) => b.totalScore - a.totalScore)
-            .map((player, _, players) => (
+            .sort(
+              (a, b) =>
+                b.totalScore - a.totalScore ||
+                (b.word?.word || b.name).localeCompare(a.word?.word || a.name)
+            )
+            .map((player, index) => (
               <tr key={player.name}>
                 <td>{player.name}</td>
                 <td>
@@ -38,8 +42,15 @@ export const FinishRoundView = observer(function ({
                     />
                   )}
                 </td>
-                <td>{getCorrectGuesserAsString(players, player)}</td>
-                <td>{player.totalScore}</td>
+                <td>{getCorrectGuesserAsString(game.players, player)}</td>
+                <td>
+                  {player.totalScore}{" "}
+                  {index === 0 && (
+                    <span role="img" aria-label="Crown">
+                      👑
+                    </span>
+                  )}
+                </td>
               </tr>
             ))}
         </tbody>

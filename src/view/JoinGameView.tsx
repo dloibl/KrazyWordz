@@ -34,11 +34,14 @@ const PlayerList = observer(function ({ game }: { game: Playable }) {
     <>
       <label htmlFor="players">Players</label>
       <ul id="players" className="players">
-        {game.players.map(({ name, color }) => (
-          <li className="player" style={{ borderColor: color }} key={name}>
-            {name} {game.isOwner({ name }) && "(Owner)"}
-          </li>
-        ))}
+        {game.players
+          .slice()
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map(({ name, color }) => (
+            <li className="player" style={{ borderColor: color }} key={name}>
+              {name} {game.isOwner({ name }) && "(Owner)"}
+            </li>
+          ))}
       </ul>
     </>
   );

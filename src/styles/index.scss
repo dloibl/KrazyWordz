@@ -1,4 +1,5 @@
 $color-primary: rgb(133, 28, 133);
+$color-active: rgba(133, 28, 133, 0.3);
 @import "milligram/src/milligram.sass";
 
 html,
@@ -111,6 +112,9 @@ footer {
   height: 6rem;
   display: flex;
   flex-direction: row;
+  &.active {
+    background: $color-active;
+  }
 }
 
 .task-card {
@@ -127,6 +131,9 @@ footer {
   display: flex;
   justify-content: center;
   align-items: center;
+  &.active {
+    background: $color-active;
+  }
 }
 .task-card.match > button {
   position: absolute;

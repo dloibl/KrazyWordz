@@ -10,17 +10,22 @@ import {
   getSortedPlayedLetters,
   getNextPosition,
 } from "../model/Letter";
+import classNames from "classnames";
 
 export const Tableau = observer(function ({
   color = "teal",
   letters = [],
   disabled = false,
   onDropCard,
+  onClick,
+  active = false,
 }: {
   color?: string;
   letters: Letter[];
   disabled?: boolean;
   onDropCard?: (card: Task) => void;
+  onClick?: () => void;
+  active?: boolean;
 }) {
   const [{ isOver }, drop] = useDrop({
     accept: [ItemTypes.LETTER, ItemTypes.CARD],
@@ -54,10 +59,11 @@ export const Tableau = observer(function ({
     <div
       onKeyDown={handleInput}
       ref={drop}
-      className={`tableau ${isOver ? "dropping" : ""}`}
+      className={classNames("tableau", { dropping: isOver, active })}
       style={{
         borderColor: color,
       }}
+      onClick={onClick}
     >
       {getSortedPlayedLetters(letters).map((letter, index) => (
         <LetterTile

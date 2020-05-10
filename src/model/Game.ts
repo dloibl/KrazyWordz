@@ -29,9 +29,6 @@ export class Game implements Playable {
   additionalCard?: Task;
 
   @observable
-  isGameFinished: boolean = false;
-
-  @observable
   winningScore = 15;
 
   @observable
@@ -76,14 +73,18 @@ export class Game implements Playable {
           (this.activePlayer.state === PlayerState.INIT ||
             this.activePlayer.state === PlayerState.NEXT_ROUND);
         if (shouldStartNextRound()) {
-          this.syncing = true;
-          // wait a bit for incoming events here
-          setTimeout(() => {
-            this.syncing = false;
-            if (shouldStartNextRound()) {
-              this.startNextRound();
-            }
-          }, 1000);
+          if (process.env.NODE_ENV === "test") {
+            this.startNextRound();
+          } else {
+            this.syncing = true;
+            // wait a bit for incoming events here
+            setTimeout(() => {
+              this.syncing = false;
+              if (shouldStartNextRound()) {
+                this.startNextRound();
+              }
+            }, 1000);
+          }
         }
       }
     );
@@ -101,6 +102,8 @@ export class Game implements Playable {
     }
     if (!this.allPlayersLoaded()) {
       return GameState.LOADING;
+    } else if (this.isGameFinished) {
+      return GameState.FINISHED;
     } else if (
       this.playerStates.some((state) => state === PlayerState.PLAY) ||
       this.playerStates.every((state) => state === PlayerState.NEXT_ROUND)
@@ -376,9 +379,10 @@ export class Game implements Playable {
     this.players.forEach((guessingPlayer) =>
       this.evaluateGuess(guessingPlayer, guessingPlayer.guess!)
     );
-    this.isGameFinished = this.players.some((player) =>
-      this.hasWinningScore(player)
-    );
+  }
+
+  private get isGameFinished() {
+    return this.players.some(this.hasWinningScore);
   }
 
   private evaluateGuess(guessingPlayer: Player, guess: Guess) {
@@ -387,9 +391,9 @@ export class Game implements Playable {
     );
   }
 
-  private hasWinningScore(player: Player) {
+  private hasWinningScore = (player: Player) => {
     return player.totalScore >= this.winningScore;
-  }
+  };
 
   private distributePoints(guessingPlayer: Player, task: Task, player: Player) {
     if (player.card?.id === task.id) {

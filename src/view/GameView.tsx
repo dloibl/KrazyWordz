@@ -42,6 +42,7 @@ export class GameView extends React.Component {
       case GameState.MAKE_GUESS:
         return <MakeGuessView game={game} />;
       case GameState.SHOW_SCORE:
+      case GameState.FINISHED:
         return <FinishRoundView game={game} />;
       default:
         return <Loading />;

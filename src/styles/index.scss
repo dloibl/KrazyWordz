@@ -190,6 +190,10 @@ footer {
   }
 }
 
+tr.winner {
+  background-color: $color-active;
+}
+
 // utils
 .center {
   display: flex;

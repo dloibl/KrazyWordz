@@ -3,6 +3,7 @@ import { Firestore } from "../remote/firebase";
 import { PlayerEventData, PlayerState, GameState } from "./Playable";
 import { when } from "mobx";
 import { Word } from "./Word";
+import { doesNotReject } from "assert";
 
 describe("Crazy Words Game", () => {
   let game: Game;
@@ -92,18 +93,25 @@ describe("Crazy Words Game", () => {
     expect(game.activePlayer.card).toBeDefined();
   });
 
-  it("can start game of joiners", async () => {
+  it("can start game of joiners", () => {
     game.init({ join: "test", player: "B" });
-    firestore.firePlayerEvent({ name: "A" });
+    firestore.firePlayerEvent({
+      name: "A",
+      cardId: "42",
+      letters: ["A", "B"],
+      state: PlayerState.PLAY,
+    });
     firestore.firePlayerEvent({ name: "B" });
     firestore.fireGameEvent({
-      started: true,
+      roundCounter: 1,
       playerCount: 2,
     });
     expect(game.playerCount).toEqual(2);
     expect(game.players.length).toEqual(2);
     expect(game.state).toEqual(GameState.PLAY_WORD);
+    expect(game.activePlayer.state).toEqual(PlayerState.PLAY);
     expect(game.activePlayer.card).toBeDefined();
+    expect(game.activePlayer.letters).toBeDefined();
   });
 
   it("synchronizes card and letters", () => {
@@ -111,10 +119,9 @@ describe("Crazy Words Game", () => {
     firestore.firePlayerEvent({ name: "A" });
     firestore.firePlayerEvent({ name: "B" });
     firestore.fireGameEvent({
-      started: true,
+      roundCounter: 1,
       playerCount: 2,
     });
-    expect(game.activePlayer.state).toEqual(PlayerState.PLAY);
     firestore.firePlayerEvent({
       name: "A",
       state: PlayerState.PLAY,
@@ -176,12 +183,20 @@ describe("Crazy Words Game", () => {
     });
 
     expect(game.state).toEqual(GameState.PLAY_WORD);
-    expect(game.roundCounter).toEqual(2);
     firestore.fireGameEvent({
       additionalCardId: "42",
+      roundCounter: 2,
     });
+    expect(game.roundCounter).toEqual(2);
     expect(game.additionalCard).toBeDefined();
     expect(oldAdditionalCardId).not.toEqual(game.additionalCard?.id);
+  });
+
+  it("game ends when some player has reached winning score", () => {
+    startGameWithTwoPlayers();
+    game.winningScore = 3;
+    game.activePlayer.totalScore = 3;
+    expect(game.state).toEqual(GameState.FINISHED);
   });
 
   const startGameWithTwoPlayers = () => {
@@ -189,7 +204,7 @@ describe("Crazy Words Game", () => {
     firestore.firePlayerEvent({ name: "A" });
     firestore.firePlayerEvent({ name: "B" });
     firestore.fireGameEvent({
-      started: true,
+      roundCounter: 1,
       playerCount: 2,
     });
     firestore.firePlayerEvent({

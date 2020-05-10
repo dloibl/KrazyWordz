@@ -1,8 +1,4 @@
-- karte syncen und letters (1/2)
-- eingabe sperren, wenn wort gespielt wurde
-- eingabe sperren, wenn guess confirmed
-- additional card neu ziehen
-- winning score implementieren
+- Daten Fehlen wenn ShowScoreView refreshed wird
 
 Optional:
 
@@ -10,9 +6,3 @@ Optional:
 - guess syncen jederzeit
 - Guess, Task, etc. ändern, sodass Ids und nicht Instanzen verwendet werden
 - change Maps zu Objects
-
-function getWinner(game: Playable) {
-return game.players.reduce(function (prev, current) {
-return prev.totalScore > current.totalScore ? prev : current;
-});
-}

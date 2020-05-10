@@ -15,18 +15,21 @@ export function TaskCard({
   active?: boolean;
   onClick?: () => void;
 }) {
-  const [, drag] = useDrag({
+  const [{ isDragging }, drag] = useDrag({
     item: {
       type: ItemTypes.CARD,
       card: task,
     },
     canDrag: () => !disabled,
+    collect: (monitor) => ({
+      isDragging: !!monitor.isDragging(),
+    }),
   });
 
   return (
     <div
       ref={drag}
-      className={classNames("task-card", { active })}
+      className={classNames("task-card", { active, dragging: isDragging })}
       style={{
         borderColor: "darkgray",
       }}

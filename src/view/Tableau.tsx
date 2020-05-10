@@ -59,7 +59,7 @@ export const Tableau = observer(function ({
     <div
       onKeyDown={handleInput}
       ref={drop}
-      className={classNames("tableau", { dropping: isOver, active })}
+      className={classNames("tableau", { active: active || isOver })}
       style={{
         borderColor: color,
       }}

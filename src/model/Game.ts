@@ -1,7 +1,13 @@
 import { Firestore } from "../remote/firebase";
 import { Player } from "./Player";
 import { Word, Task } from ".";
-import { Playable, GameState, PlayerEventData, PlayerState } from "./Playable";
+import {
+  Playable,
+  GameState,
+  PlayerEventData,
+  PlayerState,
+  GameEventData,
+} from "./Playable";
 import { observable, IReactionDisposer, action } from "mobx";
 import { CardPool } from "./CardPool";
 import { computed, reaction } from "mobx";
@@ -37,6 +43,9 @@ export class Game implements Playable {
   @observable
   owner?: string;
 
+  @observable
+  syncing = false;
+
   private cardPool = CardPool.getInstance();
 
   private letterPool?: LetterPool;
@@ -61,11 +70,20 @@ export class Game implements Playable {
         if (state === GameState.SHOW_SCORE) {
           this.givePoints();
         }
-        if (
-          state === GameState.PLAY_WORD &&
-          this.playerStates.some((it) => it === PlayerState.NEXT_ROUND)
-        ) {
-          this.startNextRound();
+
+        const shouldStartNextRound = () =>
+          this.state === GameState.PLAY_WORD &&
+          (this.activePlayer.state === PlayerState.INIT ||
+            this.activePlayer.state === PlayerState.NEXT_ROUND);
+        if (shouldStartNextRound()) {
+          this.syncing = true;
+          // wait a bit for incoming events here
+          setTimeout(() => {
+            this.syncing = false;
+            if (shouldStartNextRound()) {
+              this.startNextRound();
+            }
+          }, 1000);
         }
       }
     );
@@ -91,7 +109,8 @@ export class Game implements Playable {
     } else if (this.playerStates.some((state) => state === PlayerState.GUESS)) {
       return GameState.MAKE_GUESS;
     } else if (
-      this.playerStates.some((state) => state === PlayerState.SHOW_SCORE)
+      this.playerStates.every((state) => state === PlayerState.SHOW_SCORE) ||
+      this.playerStates.some((state) => state === PlayerState.NEXT_ROUND)
     ) {
       return GameState.SHOW_SCORE;
     } else if (this.players.some((it) => it.totalScore >= this.winningScore)) {
@@ -126,51 +145,42 @@ export class Game implements Playable {
     this.stateReactionDisposer();
   }
 
+  @action
   syncGameState = ({
     additionalCardId,
-    started,
+    roundCounter,
     owner,
     playerCount,
     winningScore,
-  }: {
-    additionalCardId: string;
-    started: boolean;
-    owner: string;
-    playerCount: number;
-    winningScore: number;
-  }) => {
-    if (started && !this.isStarted && this.activePlayer) {
-      console.log("Starting game");
-      this.startNextRound();
-    }
-    if (winningScore) {
-      this.winningScore = winningScore;
-    }
+  }: GameEventData) => {
+    this.roundCounter = roundCounter || this.roundCounter;
+    this.winningScore = winningScore || this.winningScore;
+    this.owner = owner || this.owner;
+    this.playerCount = playerCount || this.playerCount;
     if (
       additionalCardId != null &&
       this.additionalCard?.id !== additionalCardId
     ) {
       this.additionalCard = CardPool.getInstance().getTask(additionalCardId);
     }
-    if (owner) {
-      this.owner = owner;
-    }
-    if (playerCount && this.playerCount < 0) {
-      this.playerCount = playerCount;
-    }
   };
 
+  @action
   syncPlayerState = (playerName: string, data: PlayerEventData) => {
     const player = this.getPlayer(playerName);
     const state = data.state;
 
+    // sync score
+    if (data.totalScore && !player.totalScore) {
+      player.totalScore = data.totalScore;
+    }
+
     //  sync card and letters
-    if (state === PlayerState.PLAY && player.state !== PlayerState.PLAY) {
-      if (data.cardId && data.letters) {
+    if (state === PlayerState.PLAY) {
+      if (player.state !== PlayerState.PLAY) {
         player.reset();
-        player.drawCard(this.cardPool, data.cardId);
-        player.drawLetters(this.letterPool!, data.letters);
       }
+      this.syncCardAndLetters(player, data);
     }
 
     // sync word
@@ -179,6 +189,9 @@ export class Game implements Playable {
       player.state !== PlayerState.GUESS &&
       data.word
     ) {
+      if (!player.card || !player.letters) {
+        this.syncCardAndLetters(player, data);
+      }
       player.playWord(new Word(data.word));
     }
 
@@ -188,6 +201,12 @@ export class Game implements Playable {
       data.guess &&
       player.state !== PlayerState.SHOW_SCORE
     ) {
+      if (!player.card) {
+        this.syncCardAndLetters(player, data);
+      }
+      if (!player.word && data.word) {
+        player.playWord(new Word(data.word));
+      }
       const guess: { [key: string]: string } = JSON.parse(data.guess);
       Object.entries(guess).forEach(([taskId, guessedPlayer]) => {
         const task = CardPool.getInstance().getTask(taskId);
@@ -204,22 +223,32 @@ export class Game implements Playable {
       state === PlayerState.NEXT_ROUND &&
       player.state !== PlayerState.NEXT_ROUND
     ) {
-      player.setReadyForNextRound();
+      player.setReadyForNextRound(data.totalScore);
     }
   };
+
+  private syncCardAndLetters(
+    player: Player,
+    { cardId, letters }: PlayerEventData
+  ) {
+    if (cardId && letters) {
+      player.drawCard(this.cardPool, cardId);
+      player.drawLetters(this.letterPool!, letters);
+    }
+  }
 
   getPlayer(name: string) {
     return (this.players.find((it) => it.name === name) ||
       this.addPlayerLocal(name))!;
   }
 
+  @action
   startNextRound() {
     console.log("start next round", this.roundCounter);
-    this.roundCounter++;
-
     this.letterPool = new LetterPool();
     this.drawCardAndLetters(this.activePlayer);
     if (this.isOwner(this.activePlayer)) {
+      this.roundCounter++;
       this.firestore.updateGame({
         additionalCardId: this.cardPool.draw().id,
         roundCounter: this.roundCounter,

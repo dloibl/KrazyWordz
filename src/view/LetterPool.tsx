@@ -8,8 +8,10 @@ import { getNextPosition } from "../model/Letter";
 
 export const LetterPool = observer(function ({
   letters = [],
+  disabled = false,
 }: {
   letters: Letter[];
+  disabled?: boolean;
 }) {
   const [, drop] = useDrop({
     accept: ItemTypes.LETTER,
@@ -27,6 +29,7 @@ export const LetterPool = observer(function ({
             key={index}
             letter={letter}
             onClick={() => (letter.position = getNextPosition(letters))}
+            disabled={disabled}
           />
         ))}
     </div>

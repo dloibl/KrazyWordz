@@ -43,13 +43,15 @@ export interface Playable {
   isOwner(player: { name: string }): boolean;
 }
 
+export interface GameEventData {
+  roundCounter: number;
+  additionalCardId?: string;
+  owner: string;
+  playerCount: number;
+  winningScore: number;
+}
+
 export interface GameEventHandler {
   onPlayerEvent(playerName: string, data: PlayerEventData): void;
-  onGameEvent: (gameData: {
-    started: boolean;
-    additionalCardId: string;
-    owner: string;
-    playerCount: number;
-    winningScore: number;
-  }) => void;
+  onGameEvent: (gameData: GameEventData) => void;
 }

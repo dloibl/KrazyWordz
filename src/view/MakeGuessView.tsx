@@ -6,6 +6,7 @@ import { MatchedCard } from "./MatchedCard";
 import { Playable } from "../model/Playable";
 import { shuffle } from "../util/shuffle";
 import { Player, Task } from "../model";
+import classNames from "classnames";
 
 export const MakeGuessView = observer(function ({ game }: { game: Playable }) {
   const activePlayer = game.activePlayer;
@@ -52,7 +53,9 @@ export const MakeGuessView = observer(function ({ game }: { game: Playable }) {
   };
 
   return (
-    <div className="page">
+    <div
+      className={classNames("page", { waiting: activePlayer.guessConfirmed })}
+    >
       <h4>What's what?</h4>
       {unmatchedWords.length > 0 && (
         <div className="match-panel">
@@ -93,7 +96,11 @@ export const MakeGuessView = observer(function ({ game }: { game: Playable }) {
           card={card}
           word={p.word!}
           color={p.color}
-          onDelete={(task) => activePlayer.guess.delete(task)}
+          onDelete={
+            activePlayer.guessConfirmed
+              ? undefined
+              : (task) => activePlayer.guess.delete(task)
+          }
         />
       ))}
       {activePlayer.guessConfirmed ? (

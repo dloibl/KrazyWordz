@@ -3,6 +3,7 @@ import { observer } from "mobx-react";
 import { Playable, PlayerState } from "../model/Playable";
 import { MatchedCard } from "./MatchedCard";
 import { Player } from "../model";
+import classNames from "classnames";
 
 export const FinishRoundView = observer(function ({
   game,
@@ -10,7 +11,11 @@ export const FinishRoundView = observer(function ({
   game: Playable;
 }) {
   return (
-    <div className="page">
+    <div
+      className={classNames("page", {
+        waiting: game.activePlayer.state === PlayerState.NEXT_ROUND,
+      })}
+    >
       <h3>Scores Round {game.roundCounter}</h3>
       <table>
         <thead>

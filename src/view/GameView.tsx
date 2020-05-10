@@ -27,12 +27,12 @@ export class GameView extends React.Component {
 
   render() {
     const game = this.game;
-    if (!game) {
-      return "Mounting...";
+    if (!game || game.syncing) {
+      return <Loading />;
     }
     switch (game.state) {
       case GameState.LOADING:
-        return "Loading...";
+        return <Loading />;
       case GameState.CREATE:
         return <CreateGameView game={game} />;
       case GameState.JOIN:
@@ -44,7 +44,15 @@ export class GameView extends React.Component {
       case GameState.SHOW_SCORE:
         return <FinishRoundView game={game} />;
       default:
-        return "Loading...";
+        return <Loading />;
     }
   }
 }
+
+const Loading = () => (
+  <div className="loader center">
+    <span role="img" aria-label="loading">
+      😋
+    </span>
+  </div>
+);

@@ -53,8 +53,9 @@ export class Player {
     this.state = PlayerState.GUESS;
   }
 
-  setReadyForNextRound() {
+  setReadyForNextRound(totalScore?: number) {
     this.waitingForNextRound = true;
+    this.totalScore = totalScore || this.totalScore;
     this.state = PlayerState.NEXT_ROUND;
   }
 

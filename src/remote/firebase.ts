@@ -81,7 +81,7 @@ export class Firestore {
     winningScore: number;
   }) {
     this.name = name;
-    await this.getGame().set({ started: false, owner, winningScore });
+    await this.getGame().set({ owner, winningScore });
     await this.subscribe();
   }
 
@@ -95,13 +95,11 @@ export class Firestore {
   }
 
   updateGame({
-    started = true,
     additionalCardId = null as string | null,
     playerCount = 0,
     roundCounter = 1,
   }) {
     this.getGame().update({
-      started,
       additionalCardId,
       playerCount,
       roundCounter,

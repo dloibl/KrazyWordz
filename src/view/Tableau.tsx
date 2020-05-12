@@ -19,6 +19,7 @@ export const Tableau = observer(function ({
   onDropCard,
   onClick,
   active = false,
+  word,
 }: {
   color?: string;
   letters: Letter[];
@@ -26,6 +27,7 @@ export const Tableau = observer(function ({
   onDropCard?: (card: Task) => void;
   onClick?: () => void;
   active?: boolean;
+  word?: string;
 }) {
   const [{ isOver }, drop] = useDrop({
     accept: [ItemTypes.LETTER, ItemTypes.CARD],
@@ -44,7 +46,7 @@ export const Tableau = observer(function ({
   });
 
   const handleInput = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Backspace") {
+    if (e.key === "Backspace" || e.key === "Delete") {
       getLastPlayedLetter(letters).position = undefined;
     } else {
       const letter = getUnplayedLetters(letters).find(
@@ -54,35 +56,40 @@ export const Tableau = observer(function ({
         letter.position = getNextPosition(letters);
       }
     }
+    e.stopPropagation();
   };
   return (
     <div
       onKeyDown={handleInput}
       ref={drop}
-      className={classNames("tableau", { active: active || isOver })}
+      className={classNames("tableau", {
+        active: active || isOver,
+        readOnly: word != null,
+      })}
       style={{
         borderColor: color,
       }}
       onClick={onClick}
     >
-      {getSortedPlayedLetters(letters).map((letter, index) => (
-        <LetterTile
-          key={index}
-          letter={letter}
-          disabled={disabled}
-          onClick={() => {
-            letter.position = undefined;
-          }}
-        />
-      ))}
+      {word ||
+        getSortedPlayedLetters(letters).map((letter, index) => (
+          <LetterTile
+            key={index}
+            letter={letter}
+            disabled={disabled}
+            onClick={() => {
+              letter.position = undefined;
+            }}
+          />
+        ))}
       {!disabled && (
         <input
-          autoFocus={true}
           tabIndex={1}
           type="text"
           value=""
           style={{ width: "100%" }}
-          onChange={() => null}
+          onKeyDown={handleInput}
+          onChange={(e) => null}
         />
       )}
     </div>

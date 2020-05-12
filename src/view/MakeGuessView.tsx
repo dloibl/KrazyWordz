@@ -70,7 +70,7 @@ export const MakeGuessView = observer(function ({ game }: { game: Playable }) {
               />
             ))}
           </div>
-          <div className="center" style={{ width: "8rem" }}>
+          <div className="center" style={{ width: "auto" }}>
             <svg width="24px" height="24px" viewBox="0 0 24 24">
               <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"></path>
             </svg>
@@ -81,6 +81,7 @@ export const MakeGuessView = observer(function ({ game }: { game: Playable }) {
                 key={p.name}
                 disabled={true}
                 color={p.color}
+                word={p.word?.word}
                 letters={p.word?.getLetters() || []}
                 onDropCard={(card) => activePlayer.addGuess(card, p)}
                 onClick={() => handleSelect({ player: p })}

@@ -8,7 +8,7 @@ import {
   PlayerState,
   GameEventData,
 } from "./Playable";
-import { observable, IReactionDisposer, action } from "mobx";
+import { observable, IReactionDisposer, action, makeObservable } from "mobx";
 import { CardPool } from "./CardPool";
 import { computed, reaction } from "mobx";
 import { LetterPool } from "./LetterPool";
@@ -43,6 +43,12 @@ export class Game implements Playable {
   @observable
   syncing = false;
 
+  @observable
+  creating = false;
+
+  @observable
+  errorMessage?: string;
+
   private cardPool = CardPool.getInstance();
 
   private letterPool?: LetterPool;
@@ -52,18 +58,19 @@ export class Game implements Playable {
   private firestore: Firestore;
 
   constructor(firestore?: Firestore) {
+    makeObservable(this);
+
     this.firestore =
       firestore ||
       new Firestore({
         onGameEvent: this.syncGameState,
         onPlayerEvent: this.syncPlayerState,
+        onError: this.handleError,
       });
 
     this.stateReactionDisposer = reaction(
       () => this.state,
       (state) => {
-        console.log("game state changed", state, this.playerStates);
-
         if (state === GameState.SHOW_SCORE) {
           this.givePoints();
         }
@@ -146,6 +153,22 @@ export class Game implements Playable {
 
   dispose() {
     this.stateReactionDisposer();
+  }
+
+  @action
+  private handleError = (error: Error) => {
+    console.error(error);
+    this.errorMessage = error.message || "Unexpected Firebase error";
+  };
+
+  @action
+  setError(message: string) {
+    this.errorMessage = message;
+  }
+
+  @action
+  clearError() {
+    this.errorMessage = undefined;
   }
 
   @action
@@ -247,7 +270,6 @@ export class Game implements Playable {
 
   @action
   startNextRound() {
-    console.log("start next round", this.roundCounter);
     this.letterPool = new LetterPool();
     this.drawCardAndLetters(this.activePlayer);
     if (this.isOwner(this.activePlayer)) {
@@ -285,6 +307,7 @@ export class Game implements Playable {
    */
   @action("join game")
   joinGame(name: string) {
+    this.clearError();
     this.name = name;
     this.firestore.joinGame(name);
   }
@@ -303,11 +326,19 @@ export class Game implements Playable {
     winningScore?: number;
     owner: string;
   }) {
-    await this.firestore.newGame({ name, owner, winningScore });
-    await this.firestore.addPlayer(owner);
-    this.owner = owner;
+    this.clearError();
+    this.creating = true;
+    try {
+      await this.firestore.newGame({ name, owner, winningScore });
+      await this.firestore.addPlayer(owner);
+      this.owner = owner;
 
-    return this.joinMyGame(name, owner);
+      return this.joinMyGame(name, owner);
+    } catch (error) {
+      this.handleError(error as Error);
+    } finally {
+      this.creating = false;
+    }
   }
 
   /**
@@ -318,13 +349,18 @@ export class Game implements Playable {
    */
   @action("add player")
   async addPlayer(name: string) {
-    await this.firestore.addPlayer(name);
-    this.setActivePlayer(name);
+    this.clearError();
+    try {
+      await this.firestore.addPlayer(name);
+      this.setActivePlayer(name);
 
-    const params = new URLSearchParams(window.location.search);
-    if (!params.has("player")) {
-      params.append("player", name);
-      window.location.search = params.toString();
+      const params = new URLSearchParams(window.location.search);
+      if (!params.has("player")) {
+        params.append("player", name);
+        window.location.search = params.toString();
+      }
+    } catch (error) {
+      this.handleError(error as Error);
     }
   }
 

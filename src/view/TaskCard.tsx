@@ -4,6 +4,11 @@ import { useDrag } from "react-dnd";
 import { ItemTypes } from "./ItemTypes";
 import classNames from "classnames";
 
+type TaskDragItem = {
+  type: typeof ItemTypes.CARD;
+  card: Task;
+};
+
 export function TaskCard({
   task,
   disabled = true,
@@ -15,7 +20,12 @@ export function TaskCard({
   active?: boolean;
   onClick?: () => void;
 }) {
-  const [{ isDragging }, drag] = useDrag({
+  const [{ isDragging }, drag] = useDrag<
+    TaskDragItem,
+    unknown,
+    { isDragging: boolean }
+  >({
+    type: ItemTypes.CARD,
     item: {
       type: ItemTypes.CARD,
       card: task,
@@ -28,7 +38,9 @@ export function TaskCard({
 
   return (
     <div
-      ref={drag}
+      ref={(node) => {
+        drag(node);
+      }}
       className={classNames("task-card", { active, dragging: isDragging })}
       style={{
         borderColor: "darkgray",

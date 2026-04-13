@@ -6,6 +6,11 @@ import { ItemTypes } from "./ItemTypes";
 import { useDrop } from "react-dnd";
 import { getNextPosition } from "../model/Letter";
 
+type LetterDropItem = {
+  type: typeof ItemTypes.LETTER;
+  letter: Letter;
+};
+
 export const LetterPool = observer(function ({
   letters = [],
   disabled = false,
@@ -13,15 +18,19 @@ export const LetterPool = observer(function ({
   letters: Letter[];
   disabled?: boolean;
 }) {
-  const [, drop] = useDrop({
+  const [, drop] = useDrop<LetterDropItem>({
     accept: ItemTypes.LETTER,
     drop: (drop) => {
-      const letter = ((drop as any) as { letter: Letter }).letter;
-      letter.position = undefined;
+      drop.letter.position = undefined;
     },
   });
   return (
-    <div ref={drop} className="letters">
+    <div
+      ref={(node) => {
+        drop(node);
+      }}
+      className="letters"
+    >
       {letters
         .filter((letter) => !letter.position)
         .map((letter, index) => (

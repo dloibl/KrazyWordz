@@ -1,11 +1,13 @@
-import { observable } from "mobx";
+import { makeObservable, observable } from "mobx";
 import { Word } from "./Word";
 
 export class Letter {
   @observable
   position?: number = undefined;
 
-  constructor(public value: string) {}
+  constructor(public value: string) {
+    makeObservable(this);
+  }
 }
 
 export function getLastPlayedLetter(letters: Letter[]) {

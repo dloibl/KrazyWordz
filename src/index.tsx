@@ -1,14 +1,14 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { GameView } from "./view/GameView";
 import { DndProvider } from "react-dnd";
-import Backend from "react-dnd-html5-backend";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 import "./styles/index.scss";
 
-ReactDOM.render(
+createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <DndProvider backend={Backend}>
+    <DndProvider backend={HTML5Backend}>
       <header>
         <span className="header-title">
           CRAZY W
@@ -23,6 +23,5 @@ ReactDOM.render(
       </div>
       <footer>v0.0.1</footer>
     </DndProvider>
-  </React.StrictMode>,
-  document.getElementById("root")
+  </React.StrictMode>
 );

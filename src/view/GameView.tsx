@@ -3,7 +3,7 @@ import { observer } from "mobx-react";
 import { PlayWordView } from "./PlayWordView";
 import { MakeGuessView } from "./MakeGuessView";
 import { FinishRoundView } from "./FinishRoundView";
-import { observable } from "mobx";
+import { makeObservable, observable } from "mobx";
 import { Game, GameState } from "../model";
 import { CreateGameView } from "./CreateGameView";
 import { JoinGameView } from "./JoinGameView";
@@ -12,6 +12,11 @@ import { JoinGameView } from "./JoinGameView";
 export class GameView extends React.Component {
   @observable
   private game?: Game;
+
+  constructor(props: {}) {
+    super(props);
+    makeObservable(this);
+  }
 
   componentDidMount() {
     const params = new URLSearchParams(window.location.search);
@@ -30,23 +35,36 @@ export class GameView extends React.Component {
     if (!game || game.syncing) {
       return <Loading />;
     }
+    let view: React.ReactNode;
     switch (game.state) {
       case GameState.LOADING:
-        return <Loading />;
+        view = <Loading />;
+        break;
       case GameState.CREATE:
-        return <CreateGameView game={game} />;
+        view = <CreateGameView game={game} />;
+        break;
       case GameState.JOIN:
-        return <JoinGameView game={game} />;
+        view = <JoinGameView game={game} />;
+        break;
       case GameState.PLAY_WORD:
-        return <PlayWordView game={game} />;
+        view = <PlayWordView game={game} />;
+        break;
       case GameState.MAKE_GUESS:
-        return <MakeGuessView game={game} />;
+        view = <MakeGuessView game={game} />;
+        break;
       case GameState.SHOW_SCORE:
       case GameState.FINISHED:
-        return <FinishRoundView game={game} />;
+        view = <FinishRoundView game={game} />;
+        break;
       default:
-        return <Loading />;
+        view = <Loading />;
     }
+    return (
+      <>
+        {game.errorMessage && <ErrorBanner message={game.errorMessage} />}
+        {view}
+      </>
+    );
   }
 }
 
@@ -55,5 +73,19 @@ const Loading = () => (
     <span role="img" aria-label="loading">
       😋
     </span>
+  </div>
+);
+
+const ErrorBanner = ({ message }: { message: string }) => (
+  <div
+    style={{
+      background: "#f8d7da",
+      color: "#721c24",
+      padding: "1rem",
+      textAlign: "center",
+      borderBottom: "1px solid #f5c6cb",
+    }}
+  >
+    {message}
   </div>
 );

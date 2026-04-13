@@ -4,6 +4,11 @@ import { useDrag } from "react-dnd";
 import { ItemTypes } from "./ItemTypes";
 import classNames from "classnames";
 
+type LetterDragItem = {
+  type: typeof ItemTypes.LETTER;
+  letter: Letter;
+};
+
 export function LetterTile({
   letter,
   disabled = false,
@@ -13,7 +18,12 @@ export function LetterTile({
   disabled?: boolean;
   onClick?: React.MouseEventHandler<HTMLDivElement>;
 }) {
-  const [{ isDragging }, drag] = useDrag({
+  const [{ isDragging }, drag] = useDrag<
+    LetterDragItem,
+    unknown,
+    { isDragging: boolean }
+  >({
+    type: ItemTypes.LETTER,
     item: {
       type: ItemTypes.LETTER,
       letter,
@@ -25,7 +35,9 @@ export function LetterTile({
   });
   return (
     <div
-      ref={drag}
+      ref={(node) => {
+        drag(node);
+      }}
       className={classNames("letter-tile", {
         dragging: isDragging,
         disabled,

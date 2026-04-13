@@ -1,21 +1,36 @@
-import firebase from "firebase/app";
-import "firebase/firestore";
+import { initializeApp } from "firebase/app";
+import {
+  collection,
+  doc,
+  Firestore as FirebaseFirestore,
+  getFirestore,
+  onSnapshot,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { Player } from "../model";
 import { GameEventHandler } from "../model/Playable";
 
-var firebaseConfig = {
-  apiKey: new URLSearchParams(window.location.search).get("apiKey"),
-  authDomain: "krazywordz-98c48.firebaseapp.com",
-  databaseURL: "https://krazywordz-98c48.firebaseio.com",
-  projectId: "krazywordz-98c48",
-  storageBucket: "krazywordz-98c48.appspot.com",
-  messagingSenderId: "898573562197",
-  appId: "1:898573562197:web:5e66487a4ddcd74361bfdc",
-  measurementId: "G-MHSVRWEX5B",
+const env = (name: string) => process.env[name] || "";
+
+const firebaseConfig = {
+  apiKey: env("REACT_APP_FIREBASE_API_KEY"),
+  authDomain: env("REACT_APP_FIREBASE_AUTH_DOMAIN"),
+  databaseURL: env("REACT_APP_FIREBASE_DATABASE_URL"),
+  projectId: env("REACT_APP_FIREBASE_PROJECT_ID"),
+  storageBucket: env("REACT_APP_FIREBASE_STORAGE_BUCKET"),
+  messagingSenderId: env("REACT_APP_FIREBASE_MESSAGING_SENDER_ID"),
+  appId: env("REACT_APP_FIREBASE_APP_ID"),
+  measurementId: env("REACT_APP_FIREBASE_MEASUREMENT_ID"),
 };
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-// firebase.analytics();
+
+if (!firebaseConfig.apiKey && process.env.NODE_ENV !== "test") {
+  console.warn(
+    "Missing REACT_APP_FIREBASE_API_KEY. Firebase requests may fail until it is configured."
+  );
+}
+
+const app = initializeApp(firebaseConfig);
 
 export class Firestore {
   private name?: string;
@@ -23,47 +38,55 @@ export class Firestore {
 
   constructor(
     private handler: GameEventHandler,
-    private db = firebase.firestore()
-  ) {
-    console.log("creating firestore");
-  }
+    private db: FirebaseFirestore = getFirestore(app)
+  ) {}
 
   private getGame() {
-    return this.db.collection("games").doc(this.name);
+    return doc(this.db, "games", this.name!);
+  }
+
+  private getPlayers() {
+    return collection(this.getGame(), "players");
   }
 
   subscribe() {
-    this.getGame().onSnapshot((querySnapshot) => {
-      const game: any = querySnapshot.data();
-      console.log("received game event", game);
-      game && this.handler.onGameEvent(game);
-    });
+    onSnapshot(
+      this.getGame(),
+      (querySnapshot) => {
+        const game: any = querySnapshot.data();
+        game && this.handler.onGameEvent(game);
+      },
+      (error) => {
+        console.error("game subscription failed", error);
+        this.handler.onError?.(error);
+      }
+    );
 
-    this.getGame()
-      .collection("players")
-      .onSnapshot((querySnapshot) => {
+    onSnapshot(
+      this.getPlayers(),
+      (querySnapshot) => {
         querySnapshot.forEach((doc) => {
           const player = doc.id;
           const data: any = doc.data();
-          console.log("received player event", player, data);
           this.handler.onPlayerEvent(player, data);
         });
-      });
+      },
+      (error) => {
+        console.error("player subscription failed", error);
+        this.handler.onError?.(error);
+      }
+    );
   }
 
   updatePlayer(player: Player) {
-    console.log("fire player event", player);
-    this.getGame()
-      .collection("players")
-      .doc(this.localPlayer)
-      .update({
-        state: player.state,
-        word: player.word?.word || null,
-        cardId: player.card?.id,
-        letters: player.letters.map((it) => it.value),
-        guess: player.guessConfirmed ? player.stringifyGuess() : null,
-        totalScore: player.totalScore,
-      });
+    updateDoc(doc(this.getPlayers(), this.localPlayer), {
+      state: player.state,
+      word: player.word?.word || null,
+      cardId: player.card?.id,
+      letters: player.letters.map((it) => it.value),
+      guess: player.guessConfirmed ? player.stringifyGuess() : null,
+      totalScore: player.totalScore,
+    });
   }
 
   joinGame(name: string) {
@@ -81,7 +104,7 @@ export class Firestore {
     winningScore: number;
   }) {
     this.name = name;
-    await this.getGame().set({ owner, winningScore });
+    await setDoc(this.getGame(), { owner, winningScore });
     await this.subscribe();
   }
 
@@ -91,7 +114,7 @@ export class Firestore {
 
   addPlayer(name: string) {
     this.setLocalPlayer(name);
-    return this.getGame().collection("players").doc(name).set({ name });
+    return setDoc(doc(this.getPlayers(), name), { name });
   }
 
   updateGame({
@@ -99,7 +122,7 @@ export class Firestore {
     playerCount = 0,
     roundCounter = 1,
   }) {
-    this.getGame().update({
+    updateDoc(this.getGame(), {
       additionalCardId,
       playerCount,
       roundCounter,

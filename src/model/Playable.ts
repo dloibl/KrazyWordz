@@ -54,4 +54,5 @@ export interface GameEventData {
 export interface GameEventHandler {
   onPlayerEvent(playerName: string, data: PlayerEventData): void;
   onGameEvent: (gameData: GameEventData) => void;
+  onError?: (error: Error) => void;
 }

@@ -1,7 +1,7 @@
 import { Game } from "./Game";
 import { Firestore } from "../remote/firebase";
 import { PlayerEventData, PlayerState, GameState } from "./Playable";
-import { when } from "mobx";
+import { runInAction, when } from "mobx";
 import { Word } from "./Word";
 import { doesNotReject } from "assert";
 
@@ -10,8 +10,8 @@ describe("Crazy Words Game", () => {
 
   beforeEach(() => {
     game = new Game(firestore);
-    delete window.location;
-    window.location = new URL("http://crazy-words") as any;
+    delete (window as any).location;
+    (window as any).location = new URL("http://crazy-words");
   });
 
   const firestore: Firestore & { fireGameEvent: any; firePlayerEvent: any } = {
@@ -44,10 +44,10 @@ describe("Crazy Words Game", () => {
       winningScore: 5,
       owner: "me",
     });
-    expect(firestore.newGame).toBeCalled();
-    expect(firestore.addPlayer).toBeCalled();
+    expect(firestore.newGame).toHaveBeenCalled();
+    expect(firestore.addPlayer).toHaveBeenCalled();
     expect(window.location.search).toEqual("?join=test&player=me");
-    expect(firestore.joinGame).toBeCalled();
+    expect(firestore.joinGame).toHaveBeenCalled();
     expect(game.state).toEqual(GameState.JOIN);
   }, 3000);
 
@@ -55,7 +55,7 @@ describe("Crazy Words Game", () => {
     game.init({ join: "game", player: null });
     expect(game.name).toEqual("game");
     await game.addPlayer("you");
-    expect(firestore.addPlayer).toBeCalled();
+    expect(firestore.addPlayer).toHaveBeenCalled();
     expect(window.location.search).toContain("player=you");
     expect(game.activePlayer.name).toEqual("you");
   });
@@ -88,7 +88,7 @@ describe("Crazy Words Game", () => {
     game.owner = "B";
     game.playerCount = 2;
     game.start();
-    expect(firestore.updateGame).toBeCalled();
+    expect(firestore.updateGame).toHaveBeenCalled();
     expect(game.state).toEqual(GameState.PLAY_WORD);
     expect(game.activePlayer.card).toBeDefined();
   });
@@ -194,8 +194,10 @@ describe("Crazy Words Game", () => {
 
   it("game ends when some player has reached winning score", () => {
     startGameWithTwoPlayers();
-    game.winningScore = 3;
-    game.activePlayer.totalScore = 3;
+    runInAction(() => {
+      game.winningScore = 3;
+      game.activePlayer.totalScore = 3;
+    });
     expect(game.state).toEqual(GameState.FINISHED);
   });
 

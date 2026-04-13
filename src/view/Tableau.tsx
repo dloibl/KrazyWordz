@@ -12,6 +12,16 @@ import {
 } from "../model/Letter";
 import classNames from "classnames";
 
+type TableauDropItem =
+  | {
+      type: typeof ItemTypes.LETTER;
+      letter: Letter;
+    }
+  | {
+      type: typeof ItemTypes.CARD;
+      card: Task;
+    };
+
 export const Tableau = observer(function ({
   color = "teal",
   letters = [],
@@ -29,15 +39,18 @@ export const Tableau = observer(function ({
   active?: boolean;
   word?: string;
 }) {
-  const [{ isOver }, drop] = useDrop({
+  const [{ isOver }, drop] = useDrop<
+    TableauDropItem,
+    void,
+    { isOver: boolean }
+  >({
     accept: [ItemTypes.LETTER, ItemTypes.CARD],
     drop: (drop) => {
       if (drop.type === ItemTypes.LETTER) {
-        const letter = ((drop as any) as { letter: Letter }).letter;
-        letter.position = getNextPosition(letters);
+        drop.letter.position = getNextPosition(letters);
       }
       if (drop.type === ItemTypes.CARD && onDropCard) {
-        onDropCard((drop as any).card);
+        onDropCard(drop.card);
       }
     },
     collect: (mon) => ({
@@ -61,7 +74,9 @@ export const Tableau = observer(function ({
   return (
     <div
       onKeyDown={handleInput}
-      ref={drop}
+      ref={(node) => {
+        drop(node);
+      }}
       className={classNames("tableau", {
         active: active || isOver,
         readOnly: word != null,

@@ -1,7 +1,7 @@
 import { Task } from "./Task";
 import { Word } from "./Word";
 import { Letter } from "./Letter";
-import { observable } from "mobx";
+import { makeObservable, observable } from "mobx";
 import { Guess } from "./Guess";
 import { CardPool } from "./CardPool";
 import { LetterPool } from "./LetterPool";
@@ -29,7 +29,9 @@ export class Player {
   @observable
   state = PlayerState.INIT;
 
-  constructor(public name: string, public color: string = "blue") {}
+  constructor(public name: string, public color: string = "blue") {
+    makeObservable(this);
+  }
 
   stringifyGuess() {
     const guess: { [key: string]: string } = {};

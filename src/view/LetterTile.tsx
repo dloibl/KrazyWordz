@@ -38,7 +38,7 @@ export function LetterTile({
       ref={(node) => {
         drag(node);
       }}
-      className={classNames("letter-tile", {
+      className={classNames("card border border-2 letter-tile", {
         dragging: isDragging,
         disabled,
       })}

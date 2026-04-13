@@ -6,6 +6,7 @@ import { TaskCard } from "./TaskCard";
 import { LetterPool } from "./LetterPool";
 import { createWord } from "../model/Letter";
 import classNames from "classnames";
+import { PageKicker, PagePanel } from "./ui";
 
 export const PlayWordView = observer(function ({ game }: { game: Playable }) {
   const player = game.activePlayer;
@@ -14,39 +15,44 @@ export const PlayWordView = observer(function ({ game }: { game: Playable }) {
   }
   return (
     <div className={classNames("page", { waiting: player.word != null })}>
-      <h4>Time to be creative! Invent a word for</h4>
-      <TaskCard task={player.card!} disabled={true} />
-      <h4>Your letters are</h4>
-      <LetterPool
-        letters={player.letters.filter(
-          (it) => !player.word?.word.includes(it.value)
-        )}
-        disabled={player.word != null}
-      />
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        <Tableau
-          color={player.color}
-          letters={player.word?.getLetters() || player.letters}
-          disabled={player.word != null}
-        />
+      <PagePanel>
+        <PageKicker>Wort erfinden</PageKicker>
+        <h2>Mach aus Buchstaben Bühnennebel</h2>
+        <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <TaskCard task={player.card!} disabled={true} featured />
+          <div className="play-area">
+            <h4>Deine Buchstaben</h4>
+            <LetterPool
+              letters={player.letters.filter(
+                (it) => !player.word?.word.includes(it.value)
+              )}
+              disabled={player.word != null}
+            />
+            <Tableau
+              color={player.color}
+              letters={player.word?.getLetters() || player.letters}
+              disabled={player.word != null}
+            />
 
-        {player.word ? (
-          <em style={{ margin: "1em" }}>Waiting for other players...</em>
-        ) : (
-          <button
-            className="button"
-            style={{ margin: "1em" }}
-            disabled={
-              player.letters.filter((it) => it.position != null).length === 0
-            }
-            onClick={() => {
-              game.playWord(player, createWord(player.letters));
-            }}
-          >
-            Play
-          </button>
-        )}
-      </div>
+            {player.word ? (
+              <em className="status-note">Warten auf die anderen...</em>
+            ) : (
+              <button
+                className="paper-btn btn-primary btn-large"
+                disabled={
+                  player.letters.filter((it) => it.position != null).length ===
+                  0
+                }
+                onClick={() => {
+                  game.playWord(player, createWord(player.letters));
+                }}
+              >
+                Wort spielen
+              </button>
+            )}
+          </div>
+        </div>
+      </PagePanel>
     </div>
   );
 });

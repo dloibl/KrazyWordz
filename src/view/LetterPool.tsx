@@ -29,7 +29,7 @@ export const LetterPool = observer(function ({
       ref={(node) => {
         drop(node);
       }}
-      className="letters"
+      className="letters flex flex-wrap justify-center gap-3"
     >
       {letters
         .filter((letter) => !letter.position)

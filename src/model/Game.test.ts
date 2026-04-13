@@ -5,13 +5,13 @@ import { runInAction, when } from "mobx";
 import { Word } from "./Word";
 import { doesNotReject } from "assert";
 
-describe("Crazy Words Game", () => {
+describe("Wortlabor Game", () => {
   let game: Game;
 
   beforeEach(() => {
     game = new Game(firestore);
     delete (window as any).location;
-    (window as any).location = new URL("http://crazy-words");
+    (window as any).location = new URL("http://wortlabor");
   });
 
   const firestore: Firestore & { fireGameEvent: any; firePlayerEvent: any } = {

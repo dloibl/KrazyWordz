@@ -1,4 +1,4 @@
-# KrazyWordz Modernization Plan
+# Wortlabor Modernization Plan
 
 ## Goal
 

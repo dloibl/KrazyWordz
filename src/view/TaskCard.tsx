@@ -14,11 +14,13 @@ export function TaskCard({
   disabled = true,
   active = false,
   onClick,
+  featured = false,
 }: {
   task: Task;
   disabled?: boolean;
   active?: boolean;
   onClick?: () => void;
+  featured?: boolean;
 }) {
   const [{ isDragging }, drag] = useDrag<
     TaskDragItem,
@@ -41,13 +43,20 @@ export function TaskCard({
       ref={(node) => {
         drag(node);
       }}
-      className={classNames("task-card", { active, dragging: isDragging })}
+      className={classNames("card border border-4 task-card", {
+        active,
+        dragging: isDragging,
+        featured,
+      })}
       style={{
         borderColor: "darkgray",
       }}
       onClick={onClick}
     >
-      {task.task}
+      <div className="card-body">
+        <span className="badge danger">Prompt</span>
+        <p>{task.task}</p>
+      </div>
     </div>
   );
 }

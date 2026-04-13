@@ -71,7 +71,7 @@ export class GameView extends React.Component {
 const Loading = () => (
   <div className="loader center">
     <span role="img" aria-label="loading">
-      😋
+      ✏️
     </span>
   </div>
 );

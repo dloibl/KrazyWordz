@@ -14,14 +14,20 @@ export function MatchedCard({
 }) {
   return (
     <div
-      className="task-card match"
+      className="card border border-4 task-card match"
       style={{
         borderColor: color,
       }}
     >
-      {card?.task} = {word?.word}
+      <div className="card-body">
+        <p>{card?.task}</p>
+        <strong>= {word?.word}</strong>
+      </div>
       {onDelete && (
-        <button className="button-clear" onClick={() => onDelete(card)}>
+        <button
+          className="paper-btn btn-danger btn-small match-delete"
+          onClick={() => onDelete(card)}
+        >
           X
         </button>
       )}

@@ -77,7 +77,7 @@ export const Tableau = observer(function ({
       ref={(node) => {
         drop(node);
       }}
-      className={classNames("tableau", {
+      className={classNames("card border border-3 tableau", {
         active: active || isOver,
         readOnly: word != null,
       })}

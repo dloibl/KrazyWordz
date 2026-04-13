@@ -1,6 +1,6 @@
-# KrazyWordz
+# Wortlabor
 
-digital version of KrazyWordz
+Digitales Spiel für erfundene Wörter und kreative Zuordnungen.
 
 ## Modernization status
 
@@ -24,7 +24,7 @@ This project was modernized from an older Create React App stack. The current ba
 
 Firebase is now configured through Create React App environment variables.
 
-The checked-in template is [`.env.example`](/home/pia/IdeaProjects/KrazyWordz/.env.example). For local development, create `.env.local` and provide at minimum:
+The checked-in template is `.env.example`. For local development, create `.env.local` and provide at minimum:
 
 `REACT_APP_FIREBASE_API_KEY=YOUR_FIREBASE_WEB_API_KEY`
 

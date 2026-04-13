@@ -5,6 +5,7 @@ import { MatchedCard } from "./MatchedCard";
 import { Player } from "../model";
 import classNames from "classnames";
 import { emojisplosions } from "emojisplosion";
+import { PageKicker, PagePanel } from "./ui";
 
 export const FinishRoundView = observer(function ({
   game,
@@ -34,61 +35,66 @@ export const FinishRoundView = observer(function ({
         waiting: game.activePlayer.state === PlayerState.NEXT_ROUND,
       })}
     >
-      {winner && <h2>{winner.name} rocked the Game!</h2>}
-      <h3>Scores Round {game.roundCounter}</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Player</th>
-            <th>Card and Word</th>
-            <th>Guessed correctly by</th>
-            <th>Score</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedPlayers.map((player, index) => (
-            <tr
-              key={player.name}
-              className={classNames({
-                winner: index === 0 && winner,
-              })}
-            >
-              <td>{player.name}</td>
-              <td>
-                {player.card && player.word && (
-                  <MatchedCard
-                    key={player.card?.id}
-                    card={player.card!}
-                    word={player.word!}
-                    color={player.color}
-                  />
-                )}
-              </td>
-              <td>{getCorrectGuesserAsString(game.players, player)}</td>
-              <td className={classNames({ loading: index === 0 })}>
-                {player.totalScore}{" "}
-                {index === 0 && (
-                  <span role="img" aria-label="Crown">
-                    👑
-                  </span>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <PagePanel>
+        <PageKicker>Runde {game.roundCounter}</PageKicker>
+        <h2>{winner ? `${winner.name} gewinnt!` : "Punkte auf den Tisch"}</h2>
+        <div className="score-table-wrap">
+          <table className="score-table">
+            <thead>
+              <tr>
+                <th>Spieler</th>
+                <th>Karte und Wort</th>
+                <th>Richtig geraten von</th>
+                <th>Punkte</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedPlayers.map((player, index) => (
+                <tr
+                  key={player.name}
+                  className={classNames({
+                    winner: index === 0 && winner,
+                  })}
+                >
+                  <td>{player.name}</td>
+                  <td>
+                    {player.card && player.word && (
+                      <MatchedCard
+                        key={player.card?.id}
+                        card={player.card!}
+                        word={player.word!}
+                        color={player.color}
+                      />
+                    )}
+                  </td>
+                  <td>{getCorrectGuesserAsString(game.players, player)}</td>
+                  <td className={classNames({ loading: index === 0 })}>
+                    {player.totalScore}{" "}
+                    {index === 0 && (
+                      <span role="img" aria-label="Crown">
+                        👑
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      {game.activePlayer.state === PlayerState.NEXT_ROUND
-        ? "Waiting for other players"
-        : !winner && (
-            <button
-              onClick={() => {
-                game.nextRound(game.activePlayer);
-              }}
-            >
-              Next Round
-            </button>
-          )}
+        {game.activePlayer.state === PlayerState.NEXT_ROUND
+          ? <em className="status-note">Warten auf die anderen...</em>
+          : !winner && (
+              <button
+                className="paper-btn btn-primary btn-large"
+                onClick={() => {
+                  game.nextRound(game.activePlayer);
+                }}
+              >
+                Nächste Runde
+              </button>
+            )}
+      </PagePanel>
     </div>
   );
 });

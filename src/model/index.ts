@@ -4,3 +4,5 @@ export { Player } from "./Player";
 export { Task } from "./Task";
 export { Word } from "./Word";
 export { GameState } from "./Playable";
+export { BOT_PROFILES, chooseBotProfiles } from "./BotProfile";
+export type { BotProfile } from "./BotProfile";

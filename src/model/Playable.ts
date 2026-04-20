@@ -1,6 +1,7 @@
 import { Player } from "./Player";
 import { Word } from "./Word";
 import { Task } from "./Task";
+import { BotProfile } from "./BotProfile";
 
 export enum GameState {
   LOADING = "LOADING",
@@ -27,6 +28,10 @@ export interface PlayerEventData {
   letters?: string[];
   guess?: string;
   totalScore?: number;
+  isBot?: boolean;
+  botProfileId?: string;
+  botProfile?: BotProfile;
+  botStatus?: "idle" | "generatingWord" | "guessing" | "error";
 }
 
 export interface Playable {
@@ -49,6 +54,9 @@ export interface GameEventData {
   owner: string;
   playerCount: number;
   winningScore: number;
+  additionalCardText?: string;
+  botCount?: number;
+  botProfileIds?: string[];
 }
 
 export interface GameEventHandler {

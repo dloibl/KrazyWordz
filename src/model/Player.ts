@@ -6,6 +6,7 @@ import { Guess } from "./Guess";
 import { CardPool } from "./CardPool";
 import { LetterPool } from "./LetterPool";
 import { PlayerState } from "./Playable";
+import { BotProfile } from "./BotProfile";
 
 export class Player {
   @observable
@@ -28,6 +29,14 @@ export class Player {
   waitingForNextRound = false;
   @observable
   state = PlayerState.INIT;
+  @observable
+  isBot = false;
+  @observable
+  botProfileId?: string;
+  @observable
+  botProfile?: BotProfile;
+  @observable
+  botStatus?: "idle" | "generatingWord" | "guessing" | "error";
 
   constructor(public name: string, public color: string = "blue") {
     makeObservable(this);

@@ -1,4 +1,3 @@
-import { initializeApp } from "firebase/app";
 import {
   collection,
   doc,
@@ -10,27 +9,8 @@ import {
 } from "firebase/firestore";
 import { Player } from "../model";
 import { GameEventHandler } from "../model/Playable";
-
-const env = (name: string) => process.env[name] || "";
-
-const firebaseConfig = {
-  apiKey: env("REACT_APP_FIREBASE_API_KEY"),
-  authDomain: env("REACT_APP_FIREBASE_AUTH_DOMAIN"),
-  databaseURL: env("REACT_APP_FIREBASE_DATABASE_URL"),
-  projectId: env("REACT_APP_FIREBASE_PROJECT_ID"),
-  storageBucket: env("REACT_APP_FIREBASE_STORAGE_BUCKET"),
-  messagingSenderId: env("REACT_APP_FIREBASE_MESSAGING_SENDER_ID"),
-  appId: env("REACT_APP_FIREBASE_APP_ID"),
-  measurementId: env("REACT_APP_FIREBASE_MEASUREMENT_ID"),
-};
-
-if (!firebaseConfig.apiKey && process.env.NODE_ENV !== "test") {
-  console.warn(
-    "Missing REACT_APP_FIREBASE_API_KEY. Firebase requests may fail until it is configured."
-  );
-}
-
-const app = initializeApp(firebaseConfig);
+import { BotProfile } from "../model/BotProfile";
+import { app } from "./firebaseApp";
 
 export class Firestore {
   private name?: string;
@@ -78,14 +58,22 @@ export class Firestore {
     );
   }
 
-  updatePlayer(player: Player) {
-    updateDoc(doc(this.getPlayers(), this.localPlayer), {
+  updatePlayer(player: Player, playerName = this.localPlayer) {
+    if (!playerName) {
+      throw new Error("No player selected for update");
+    }
+    updateDoc(doc(this.getPlayers(), playerName), {
       state: player.state,
-      word: player.word?.word || null,
+      word: player.word ? player.word.word : null,
       cardId: player.card?.id,
+      cardText: player.card?.task,
       letters: player.letters.map((it) => it.value),
       guess: player.guessConfirmed ? player.stringifyGuess() : null,
       totalScore: player.totalScore,
+      isBot: player.isBot || null,
+      botProfileId: player.botProfileId || null,
+      botProfile: player.botProfile || null,
+      botStatus: player.botStatus || null,
     });
   }
 
@@ -98,13 +86,23 @@ export class Firestore {
     name,
     owner,
     winningScore = 15,
+    botCount = 0,
+    botProfileIds = [],
   }: {
     name: string;
     owner: string;
     winningScore: number;
+    botCount?: number;
+    botProfileIds?: string[];
   }) {
     this.name = name;
-    await setDoc(this.getGame(), { owner, winningScore });
+    await setDoc(this.getGame(), {
+      owner,
+      winningScore,
+      botCount,
+      botProfileIds,
+      botAutomationVersion: 1,
+    });
     await this.subscribe();
   }
 
@@ -114,16 +112,28 @@ export class Firestore {
 
   addPlayer(name: string) {
     this.setLocalPlayer(name);
-    return setDoc(doc(this.getPlayers(), name), { name });
+    return setDoc(doc(this.getPlayers(), name), { name, isBot: false });
+  }
+
+  addBotPlayer(playerId: string, botProfile: BotProfile) {
+    return setDoc(doc(this.getPlayers(), playerId), {
+      name: botProfile.name,
+      isBot: true,
+      botProfileId: botProfile.id,
+      botProfile,
+      botStatus: "idle",
+    });
   }
 
   updateGame({
     additionalCardId = null as string | null,
+    additionalCardText = null as string | null,
     playerCount = 0,
     roundCounter = 1,
   }) {
     updateDoc(this.getGame(), {
       additionalCardId,
+      additionalCardText,
       playerCount,
       roundCounter,
     });

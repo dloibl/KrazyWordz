@@ -14,6 +14,11 @@ import { computed, reaction } from "mobx";
 import { LetterPool } from "./LetterPool";
 import { Guess } from "./Guess";
 import { computeColor } from "./Color";
+import { BotProfile, chooseBotProfiles } from "./BotProfile";
+import {
+  evaluateBotAssignments,
+  generateBotWord,
+} from "../ai/botAi";
 
 export class Game implements Playable {
   @observable
@@ -55,6 +60,10 @@ export class Game implements Playable {
 
   private stateReactionDisposer: IReactionDisposer;
 
+  private botReactionDisposer: IReactionDisposer;
+
+  private triggeredBotActions = new Set<string>();
+
   private firestore: Firestore;
 
   constructor(firestore?: Firestore) {
@@ -94,6 +103,11 @@ export class Game implements Playable {
           }
         }
       }
+    );
+
+    this.botReactionDisposer = reaction(
+      () => this.botActionSignature,
+      () => this.runBotActions()
     );
 
     (window as any).Game = this;
@@ -153,6 +167,7 @@ export class Game implements Playable {
 
   dispose() {
     this.stateReactionDisposer();
+    this.botReactionDisposer();
   }
 
   @action
@@ -178,6 +193,7 @@ export class Game implements Playable {
     owner,
     playerCount,
     winningScore,
+    additionalCardText,
   }: GameEventData) => {
     this.roundCounter = roundCounter || this.roundCounter;
     this.winningScore = winningScore || this.winningScore;
@@ -188,6 +204,9 @@ export class Game implements Playable {
       this.additionalCard?.id !== additionalCardId
     ) {
       this.additionalCard = CardPool.getInstance().getTask(additionalCardId);
+      if (additionalCardText) {
+        this.additionalCard.task = additionalCardText;
+      }
     }
   };
 
@@ -195,6 +214,10 @@ export class Game implements Playable {
   syncPlayerState = (playerName: string, data: PlayerEventData) => {
     const player = this.getPlayer(playerName);
     const state = data.state;
+    player.isBot = Boolean(data.isBot);
+    player.botProfileId = data.botProfileId;
+    player.botProfile = data.botProfile;
+    player.botStatus = data.botStatus;
 
     // sync score
     if (data.totalScore && !player.totalScore) {
@@ -213,7 +236,7 @@ export class Game implements Playable {
     if (
       state === PlayerState.GUESS &&
       player.state !== PlayerState.GUESS &&
-      data.word
+      data.word != null
     ) {
       if (!player.card || !player.letters) {
         this.syncCardAndLetters(player, data);
@@ -230,7 +253,7 @@ export class Game implements Playable {
       if (!player.card) {
         this.syncCardAndLetters(player, data);
       }
-      if (!player.word && data.word) {
+      if (!player.word && data.word != null) {
         player.playWord(new Word(data.word));
       }
       const guess: { [key: string]: string } = JSON.parse(data.guess);
@@ -274,8 +297,14 @@ export class Game implements Playable {
     this.drawCardAndLetters(this.activePlayer);
     if (this.isOwner(this.activePlayer)) {
       this.roundCounter++;
+      this.triggeredBotActions.clear();
+      this.players
+        .filter((player) => player.isBot)
+        .forEach((player) => this.drawCardAndLetters(player));
+      const additionalCard = this.cardPool.draw();
       this.firestore.updateGame({
-        additionalCardId: this.cardPool.draw().id,
+        additionalCardId: additionalCard.id,
+        additionalCardText: additionalCard.task,
         roundCounter: this.roundCounter,
         playerCount: this.players.length,
       });
@@ -321,16 +350,30 @@ export class Game implements Playable {
     name,
     winningScore = 15,
     owner,
+    botCount = 0,
   }: {
     name: string;
     winningScore?: number;
     owner: string;
+    botCount?: number;
   }) {
     this.clearError();
     this.creating = true;
     try {
-      await this.firestore.newGame({ name, owner, winningScore });
+      const botProfiles = chooseBotProfiles(botCount);
+      await this.firestore.newGame({
+        name,
+        owner,
+        winningScore,
+        botCount,
+        botProfileIds: botProfiles.map((profile) => profile.id),
+      });
       await this.firestore.addPlayer(owner);
+      await Promise.all(
+        botProfiles.map((profile) =>
+          this.firestore.addBotPlayer(profile.name, profile)
+        )
+      );
       this.owner = owner;
 
       return this.joinMyGame(name, owner);
@@ -374,7 +417,7 @@ export class Game implements Playable {
     player.reset();
     player.drawCard(this.cardPool);
     player.drawLetters(this.letterPool!);
-    this.firestore.updatePlayer(player);
+    this.firestore.updatePlayer(player, player.name);
   }
 
   /**
@@ -386,7 +429,7 @@ export class Game implements Playable {
   @action("play word")
   playWord(player: Player, word: Word) {
     player.playWord(word);
-    this.firestore.updatePlayer(player);
+    this.firestore.updatePlayer(player, player.name);
   }
 
   /**
@@ -397,7 +440,7 @@ export class Game implements Playable {
   @action("make guess")
   makeYourGuess(player: Player) {
     player.confirmGuess();
-    this.firestore.updatePlayer(player);
+    this.firestore.updatePlayer(player, player.name);
   }
 
   /**
@@ -408,7 +451,15 @@ export class Game implements Playable {
   @action("next round")
   nextRound(player: Player) {
     player.setReadyForNextRound();
-    this.firestore.updatePlayer(player);
+    this.firestore.updatePlayer(player, player.name);
+    if (this.isOwner(player)) {
+      this.players
+        .filter((it) => it.isBot && it.state === PlayerState.SHOW_SCORE)
+        .forEach((bot) => {
+          bot.setReadyForNextRound();
+          this.firestore.updatePlayer(bot, bot.name);
+        });
+    }
   }
 
   private givePoints() {
@@ -439,6 +490,7 @@ export class Game implements Playable {
     }
   }
 
+  @action
   private addPlayerLocal(name: string) {
     if (!name) {
       throw new Error("Name must be given");
@@ -455,6 +507,146 @@ export class Game implements Playable {
 
   private allPlayersLoaded() {
     return this.playerCount === this.players.length;
+  }
+
+  private get botActionSignature() {
+    return this.players
+      .map((player) =>
+        [
+          player.name,
+          player.isBot,
+          player.state,
+          player.word ? "word" : "no-word",
+          player.guessConfirmed,
+          player.botStatus,
+          this.state,
+          this.roundCounter,
+        ].join(":")
+      )
+      .join("|");
+  }
+
+  private runBotActions() {
+    if (!this.isOwner(this.activePlayer) || !this.isStarted) {
+      return;
+    }
+
+    this.players
+      .filter((player) => player.isBot)
+      .forEach((bot) => {
+        if (bot.state === PlayerState.PLAY && bot.botStatus === "idle") {
+          this.triggerBotWord(bot);
+        }
+        if (
+          this.state === GameState.MAKE_GUESS &&
+          bot.state === PlayerState.GUESS &&
+          bot.botStatus === "idle" &&
+          this.players.every((player) => player.word != null)
+        ) {
+          this.triggerBotAssignments(bot);
+        }
+      });
+  }
+
+  private triggerBotWord(bot: Player) {
+    const key = `${this.roundCounter}:${bot.name}:word`;
+    if (this.triggeredBotActions.has(key)) {
+      return;
+    }
+    this.triggeredBotActions.add(key);
+    bot.botStatus = "generatingWord";
+    generateBotWord({
+      questionCard: bot.card?.task || "",
+      availableLetters: bot.letters.map((letter) => letter.value),
+      botProfile: this.getBotProfile(bot),
+      seed: `${this.name}:${this.roundCounter}:${bot.name}`,
+    })
+      .then(({ word }) => {
+        bot.playWord(new Word(word));
+        bot.botStatus = "idle";
+        this.firestore.updatePlayer(bot, bot.name);
+      })
+      .catch((error) => {
+        this.triggeredBotActions.delete(key);
+        bot.botStatus = "idle";
+        this.handleError(error as Error);
+      });
+  }
+
+  private triggerBotAssignments(bot: Player) {
+    const key = `${this.roundCounter}:${bot.name}:guess`;
+    if (this.triggeredBotActions.has(key)) {
+      return;
+    }
+    this.triggeredBotActions.add(key);
+    bot.botStatus = "guessing";
+    evaluateBotAssignments({
+      allQuestionCards: this.getGuessableQuestionCards(bot),
+      allSubmittedWords: this.getGuessableSubmittedWords(bot),
+      selfPlayerId: bot.name,
+      selfQuestionCard: {
+        cardId: bot.card?.id || "",
+        text: bot.card?.task || "",
+      },
+      selfWord: bot.word?.word || "",
+      botProfile: this.getBotProfile(bot),
+      seed: `${this.name}:${this.roundCounter}:${bot.name}`,
+    })
+      .then(({ guess }) => {
+        Object.entries(guess).forEach(([taskId, guessedPlayer]) => {
+          const task = this.cardPool.getTask(taskId);
+          const player = this.getPlayer(guessedPlayer);
+          if (task && player) {
+            bot.addGuess(task, player);
+          }
+        });
+        bot.confirmGuess();
+        bot.botStatus = "idle";
+        this.firestore.updatePlayer(bot, bot.name);
+      })
+      .catch((error) => {
+        this.triggeredBotActions.delete(key);
+        bot.botStatus = "idle";
+        this.handleError(error as Error);
+      });
+  }
+
+  private getBotProfile(bot: Player): BotProfile {
+    if (bot.botProfile) {
+      return bot.botProfile;
+    }
+    return (
+      chooseBotProfiles(4).find((profile) => profile.id === bot.botProfileId) ||
+      chooseBotProfiles(1)[0]
+    );
+  }
+
+  private getGuessableQuestionCards(bot: Player) {
+    const playerCards = this.players
+      .filter((player) => player !== bot)
+      .filter((player) => player.card)
+      .map((player) => ({
+        cardId: player.card!.id,
+        text: player.card!.task,
+      }));
+
+    if (this.additionalCard) {
+      playerCards.push({
+        cardId: this.additionalCard.id,
+        text: this.additionalCard.task,
+      });
+    }
+
+    return playerCards;
+  }
+
+  private getGuessableSubmittedWords(bot: Player) {
+    return this.players
+      .filter((player) => player !== bot)
+      .map((player) => ({
+        playerId: player.name,
+        word: player.word?.word || "",
+      }));
   }
 
   @computed
